@@ -1,0 +1,47 @@
+# myApp/docker-compose.yaml
+services:
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports: 
+      - "5432:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+    networks:
+      - dbN
+
+  pg-admin:
+    image: dpage/pgadmin4:8.2
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=emanuelecorsi1@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=postgres
+      - PGADMIN_LISTEN_PORT=5050
+    ports:
+      - "5050:5050"
+    networks:
+      - dbN
+  
+  frontend:
+    build: ./frontend
+    container_name: frontend_c
+    ports:
+      - '3000:3000'
+
+  backend:
+    build: ./backend
+    container_name: backend_c
+    ports:
+      - '4000:4000'
+    stdin_open: true
+    tty: true
+    networks:
+      - dbN
+
+volumes:
+  data:
+
+
+networks:
+  dbN:
