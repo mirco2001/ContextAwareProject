@@ -1,4 +1,3 @@
-import { hot } from 'react-hot-loader/root';
 import { useEffect } from 'react';
 
 import { Map, View } from 'ol';
@@ -22,7 +21,7 @@ function OlMap() {
         zoom: 0,
       }),
     });
-    return () => map.setTarget(null)
+    return () => map.setTarget(undefined)
   }, []);
 
   return (
@@ -30,4 +29,4 @@ function OlMap() {
   );
 }
 
-export default hot(OlMap);
+export default OlMap;
