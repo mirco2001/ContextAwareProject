@@ -1,7 +1,7 @@
 # myApp/docker-compose.yaml
 services:
   db:
-    image: postgres:16
+    image: postgis/postgis:16-3.4-alpine
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -9,6 +9,7 @@ services:
       - "5432:5432"
     volumes:
       - data:/var/lib/postgresql/data
+      # - C:/Users/Utente PC/Downloads:/provadb
     networks:
       - dbN
 
