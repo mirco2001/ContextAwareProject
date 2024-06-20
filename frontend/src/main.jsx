@@ -12,13 +12,13 @@ import {
 } from "react-router-dom";
 
 // pagine generiche
+import HomePage from './routes/HomePage'
 import Root from './routes/root';
 import ErrorPage from './ErrorPage';
 
 // pagine specifiche
 import OlMap from "./routes/OlMap"
-import RadioGroupForm from "./routes/testform"
-import DrawerDemo from "./routes/testToast"
+import RadioGroupForm from "./routes/form"
 
 const router = createBrowserRouter([
   {
@@ -27,16 +27,16 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
+        path: "home",
+        element: <HomePage />
+      },
+      {
         path: "mappa",
         element: <OlMap />
       },
       {
         path: "form",
         element: <RadioGroupForm />
-      },
-      {
-        path: "tos",
-        element: <DrawerDemo />
       },
     ]
   }
