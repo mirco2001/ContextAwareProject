@@ -1,5 +1,7 @@
 "use client"
 
+import { useNavigate } from "react-router-dom";
+
 // zod validazione e tipizzazione form
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -147,6 +149,18 @@ const formSchema = z.object({
 })
 
 function RadioGroupForm() {
+    const navigate = useNavigate();
+
+    function onSubmit(values: z.infer<typeof formSchema>) {
+        // Do something with the form values.
+        // ✅ This will be type-safe and validated.
+        // fetchData();
+        console.log("valori inviati", values);
+
+        navigate("/mappa", { state: { valori: values} });
+    }
+
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -182,20 +196,11 @@ function RadioGroupForm() {
         console.log(data);
     };
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        fetchData();
-        console.log(values);
-    }
-
     // stili radio button
     const radioBack = "border-blue-gray-400 border-4 transition-colors duration-400";
     const radio_red = radioBack + " text-red-500 hover:bg-red-500";
     const radio_yellow = radioBack + " text-yellow-500 hover:bg-yellow-500";
     const radio_green = radioBack + " text-green-500 hover:bg-green-500";
-
-
 
     function listQuestions(questions: Question[]) {
 
