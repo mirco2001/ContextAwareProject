@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
-import { Feature, Map, MapBrowserEvent, View } from 'ol';
+import { Map, MapBrowserEvent, View } from 'ol';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import { OSM, Vector as VectorSource } from 'ol/source.js';
 import 'ol/ol.css';
@@ -8,7 +9,6 @@ import { Draw, Modify, Snap } from 'ol/interaction.js';
 import Select from 'ol/interaction/Select.js';
 import { fromLonLat } from 'ol/proj';
 import Point from 'ol/geom/Point';
-import { altKeyOnly, click, pointerMove } from 'ol/events/condition.js';
 
 import {
   ResizableHandle,
@@ -21,20 +21,16 @@ import Fill from 'ol/style/Fill';
 import Stroke from 'ol/style/Stroke';
 import { Polygon } from 'ol/geom';
 import { FeatureLike } from 'ol/Feature';
-import { useLocation } from 'react-router-dom';
+
+import UserProfile from '../UserProfile.ts'
+
 
 
 function OlMap() {
 
   // test passaggio valori da form
-  const { state } = useLocation();
-  if (state != undefined) {
-    const { valori } = state; // Read values passed on state
-    console.log("valori arrivati", valori);
-  }else{
-    console.log("niente è stato passato");
-  }
-
+  const { state } = useLocation()
+  const { searchType } = state;
 
   var map: Map;
 
@@ -122,29 +118,14 @@ function OlMap() {
     // map.addInteraction(modify);
 
 
-    // select = new Select({
-    //   condition: pointerMove,
-    // });
-
-    // select.on('select', function (e) {
-
-
-    //   var features = e.target.getFeatures();
-
-
-    //   console.log(features.item(0));
-
-
-
-
-    // });
-
-    // map.addInteraction(select);
-
-
-
     return () => map.setTarget(undefined)
   }, []);
+
+  //   const fetchData = async () => {
+  //     const res = await fetch("http://localhost:4000/get");
+  //     const data = await res.json();
+  //     console.log(data);
+  // };
 
   function goBologna() {
     let point = new Point(fromLonLat([11.3394883, 44.4938134]));
@@ -157,6 +138,12 @@ function OlMap() {
     });
   }
 
+  const fetchData = async () => {
+    const res = await fetch("http://localhost:4000/getZone");
+    const data = await res.json();
+    console.log(data);
+  };
+
   function Attiva() {
     // tenendo premuto shift si va in modalità free draw
 
@@ -167,6 +154,7 @@ function OlMap() {
     map.removeInteraction(draw);
 
     map.on('click', callback);
+    // fetchData();
 
 
     //Get the feature that's selected

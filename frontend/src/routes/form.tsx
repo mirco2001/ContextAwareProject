@@ -1,13 +1,6 @@
 "use client"
 
-import { useNavigate } from "react-router-dom";
-
-// zod validazione e tipizzazione form
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-
-// elementi form
+// import componenti shadecn
 import { Button } from "@/components/ui/button"
 import {
     Form,
@@ -18,23 +11,32 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-
-// card
 import {
     Card,
-    CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
 } from "@/components/ui/card"
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
 import { Separator } from "@/components/ui/separator"
-import { Heart, HeartCrack, HomeIcon, Plus } from "lucide-react"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 
+// import icone e stili
+import { Heart, HeartCrack } from "lucide-react"
+
+// import componenti react
+import { useNavigate } from "react-router-dom";
+
+// zod validazione e tipizzazione form
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import formSchema from "../dataType"
+
+import UserProfile from '../UserProfile.ts'
+
+// definisco le possibili key che le domande possono avere
 type FormKeys =
     // Parametri inerenti a servizi RICREATIVI/EDUCATIVI del form
     'vicinanza_scuole' | 'vicinanza_dopoScuola' | 'vicinanza_areePicnic' | 'vicinanza_parchi' | 'vicinanza_parchiGiochi' | 'vicinanza_areeSport' |
@@ -45,11 +47,14 @@ type FormKeys =
     // Parametri inerenti a servizi CULTURALI/INTRATTENIMENTO del form
     'vicinanza_palestre' | 'vicinanza_ristoranti' | 'vicinanza_intrattenimentoNotturno' | 'vicinanza_cinema' | 'vicinanza_biblioteche' | 'vicinanza_museiGallerieArte';
 
+// definisco struttura di una domanda
 interface Question {
     id: FormKeys;
     value: string;
 }
 
+// creo la lista delle domande
+// - per servizi Educativi & Ricreativi
 export const ServiziEducativiRicreativi: Question[] = [{
     id: "vicinanza_scuole",
     value: "È importante ci siano scuole nel vicinato",
@@ -70,7 +75,7 @@ export const ServiziEducativiRicreativi: Question[] = [{
     value: "È importante ci siano delle aree per lo sport (almeno un campo sportivo) nel raggio di 500 metri",
 },
 ];
-
+// - per servizi Trasporto & Accessibilita
 export const ServiziTrasportoAccessibilita: Question[] = [{
     id: "vicinanza_fermateBus",
     value: "È importante la presenza di fermate dell’autobus nelle vicinanze",
@@ -85,7 +90,7 @@ export const ServiziTrasportoAccessibilita: Question[] = [{
     value: "È importante la disponibilità di parcheggi dotati di colonnine elettriche",
 }
 ];
-
+// - per servizi Sanitari & Quotidiani
 export const ServiziSanitariQuotidiani: Question[] = [{
     id: "vicinanza_farmacie",
     value: "È importante la presenza di farmacie nelle vicinanze",
@@ -100,7 +105,7 @@ export const ServiziSanitariQuotidiani: Question[] = [{
     value: "È importante avere una banca nelle vicinanze",
 }
 ];
-
+// - per servizi Culturali & Intrattenimento
 export const ServiziCulturaliIntrattenimento: Question[] = [{
     id: "vicinanza_palestre",
     value: "È importante la disponibilità di palestre nel quartiere",
@@ -122,86 +127,28 @@ export const ServiziCulturaliIntrattenimento: Question[] = [{
 }
 ];
 
-const formSchema = z.object({
-    vicinanza_scuole: z.string(),
-    vicinanza_dopoScuola: z.string(),
-    vicinanza_areePicnic: z.string(),
-    vicinanza_parchi: z.string(),
-    vicinanza_parchiGiochi: z.string(),
-    vicinanza_areeSport: z.string(),
-
-    vicinanza_fermateBus: z.string(),
-    vicinanza_fermateTreno: z.string(),
-    vicinanza_parcheggi: z.string(),
-    vicinanza_parcheggiColonnine: z.string(),
-
-    vicinanza_farmacie: z.string(),
-    vicinanza_ospedali: z.string(),
-    vicinanza_supermercati: z.string(),
-    vicinanza_banche: z.string(),
-
-    vicinanza_palestre: z.string(),
-    vicinanza_ristoranti: z.string(),
-    vicinanza_intrattenimentoNotturno: z.string(),
-    vicinanza_cinema: z.string(),
-    vicinanza_biblioteche: z.string(),
-    vicinanza_museiGallerieArte: z.string(),
-})
-
 function RadioGroupForm() {
     const navigate = useNavigate();
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        // fetchData();
-        console.log("valori inviati", values);
-
-        navigate("/mappa", { state: { valori: values} });
+        UserProfile.setServicesPreference(values);
+        navigate(-1);
     }
 
 
+    // imposto le risposte di defoult al form
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            vicinanza_scuole: "3",
-            vicinanza_dopoScuola: "3",
-            vicinanza_areePicnic: "3",
-            vicinanza_parchi: "3",
-            vicinanza_parchiGiochi: "3",
-            vicinanza_areeSport: "3",
-
-            vicinanza_fermateBus: "3",
-            vicinanza_fermateTreno: "3",
-            vicinanza_parcheggi: "3",
-            vicinanza_parcheggiColonnine: "3",
-
-            vicinanza_farmacie: "3",
-            vicinanza_ospedali: "3",
-            vicinanza_supermercati: "3",
-            vicinanza_banche: "3",
-
-            vicinanza_palestre: "3",
-            vicinanza_ristoranti: "3",
-            vicinanza_intrattenimentoNotturno: "3",
-            vicinanza_cinema: "3",
-            vicinanza_biblioteche: "3",
-            vicinanza_museiGallerieArte: "3",
-        },
+        defaultValues: UserProfile.getServicesPreference(),
     })
 
-    const fetchData = async () => {
-        const res = await fetch("http://localhost:4000/get");
-        const data = await res.json();
-        console.log(data);
-    };
-
-    // stili radio button
+    // definisco stili radio button
     const radioBack = "border-blue-gray-400 border-4 transition-colors duration-400";
     const radio_red = radioBack + " text-red-500 hover:bg-red-500";
     const radio_yellow = radioBack + " text-yellow-500 hover:bg-yellow-500";
     const radio_green = radioBack + " text-green-500 hover:bg-green-500";
 
+    // metodo che partendo da una lista di "questions" crea la controparte html
     function listQuestions(questions: Question[]) {
 
         return questions.map(question =>
@@ -265,13 +212,13 @@ function RadioGroupForm() {
                             <TabsList className="w-[100%] h-[100%] flex flex-col">
 
                                 <div className="lg:absolute top-0 p-2">
-                                    <TabsTrigger value="Educativi_Ricreativi" className="w-[100%] my-2">           <p className="text-sm text-wrap font-semibold lg:text-lg">Educativi e Ricreativi</p> </TabsTrigger>
-                                    <TabsTrigger value="Trasporto_Accessibilità" className="w-[100%] my-2">        <p className="text-sm text-wrap font-semibold lg:text-lg">Trasporto e Accessibilità </p></TabsTrigger>
-                                    <TabsTrigger value="Sanitari_Quotidiani" className="w-[100%] my-2">            <p className="text-sm text-wrap font-semibold lg:text-lg">Sanitari e Quotidiani </p></TabsTrigger>
-                                    <TabsTrigger value="Culturali_Intrattenimento" className="w-[100%] my-2">      <p className="text-sm text-wrap font-semibold lg:text-lg">Culturali e di Intrattenimento </p></TabsTrigger>
+                                    <TabsTrigger value="Educativi_Ricreativi" className="w-[100%] my-2"> <p className="text-sm text-wrap font-semibold lg:text-lg">Educativi e Ricreativi</p> </TabsTrigger>
+                                    <TabsTrigger value="Trasporto_Accessibilità" className="w-[100%] my-2"> <p className="text-sm text-wrap font-semibold lg:text-lg">Trasporto e Accessibilità </p></TabsTrigger>
+                                    <TabsTrigger value="Sanitari_Quotidiani" className="w-[100%] my-2"> <p className="text-sm text-wrap font-semibold lg:text-lg">Sanitari e Quotidiani </p></TabsTrigger>
+                                    <TabsTrigger value="Culturali_Intrattenimento" className="w-[100%] my-2"> <p className="text-sm text-wrap font-semibold lg:text-lg">Culturali e di Intrattenimento </p></TabsTrigger>
                                 </div>
 
-                                <Button type="submit" className="w-[95%] lg:absolute bottom-0 m-2">Submit</Button>
+                                <Button type="submit" className="w-[95%] lg:absolute bottom-0 m-2">Salva</Button>
                             </TabsList>
                         </div>
 
@@ -279,7 +226,7 @@ function RadioGroupForm() {
                         </div>
 
 
-                        <Card className="w-[100%] h-[600px] lg:w-[75%] overflow-y-auto">
+                        <ScrollArea className="w-[100%] h-[600px] lg:w-[75%] rounded-md border">
 
                             <TabsContent value="Educativi_Ricreativi" className="transition-all items-center justify-center">
                                 {listQuestions(ServiziEducativiRicreativi)}
@@ -297,7 +244,7 @@ function RadioGroupForm() {
                             <TabsContent value="Culturali_Intrattenimento" className="items-center justify-center">
                                 {listQuestions(ServiziCulturaliIntrattenimento)}
                             </TabsContent>
-                        </Card>
+                        </ScrollArea>
 
                     </Tabs>
 

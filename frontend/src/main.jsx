@@ -17,7 +17,7 @@ import Root from './routes/root';
 import ErrorPage from './ErrorPage';
 
 // pagine specifiche
-import OlMap from "./routes/OlMap"
+import MapSearch from "./routes/MapSearch"
 import RadioGroupForm from "./routes/form"
 
 const router = createBrowserRouter([
@@ -31,8 +31,8 @@ const router = createBrowserRouter([
         element: <HomePage />
       },
       {
-        path: "mappa",
-        element: <OlMap />
+        path: "search",
+        element: <MapSearch />
       },
       {
         path: "form",
