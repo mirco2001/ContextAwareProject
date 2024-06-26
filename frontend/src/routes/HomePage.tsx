@@ -32,19 +32,19 @@ function HomePage() {
 
                     <CardContent className="flex flex-col justify-between py-0 px-3 lg:flex-row">
 
-                        <Link className="flex-1 m-2 lg:h-20" to={'/search'} state={{ searchType: "zone" }}>
+                        <Link className="flex-1 m-2 lg:h-20" to={'/searchZone'}>
                             <Button className="h-full w-full">
                                 <Map className="mr-2 h-6 w-6" /> Ricerca per Zona
                             </Button>
                         </Link>
 
-                        <Link className="flex-1 m-2 lg:h-20" to={'/search'} state={{ searchType: "draw" }}>
+                        <Link className="flex-1 m-2 lg:h-20" to={'/searchDraw'}>
                             <Button className="h-full w-full">
                                 <Pencil className="mr-2 h-6 w-6" /> Disegna l'Area
                             </Button>
                         </Link>
 
-                        <Link className="flex-1 m-2 lg:h-20" to={'/search'} state={{ searchType: "address" }}>
+                        <Link className="flex-1 m-2 lg:h-20" to={'/searchAddress'}>
                             <Button className="h-full w-full">
                                 <MapPin className="mr-2 h-6 w-6" /> Ricerca l'Indirizzo
                             </Button>
@@ -55,7 +55,7 @@ function HomePage() {
                     <CardFooter>
                         <Link className="flex items-center space-x-2 mx-auto" to={'/form'}>
                             <Button variant="link" className="text-wrap">
-                                <Heart className="mx-1 lg:mr-2 lg:h-4 lg:w-4"/> Per una ricerca accurata Specifica le tue Preferenze
+                                <Heart className="mx-1 lg:mr-2 lg:h-4 lg:w-4" /> Per una ricerca accurata Specifica le tue Preferenze
                             </Button>
                         </Link>
                     </CardFooter>

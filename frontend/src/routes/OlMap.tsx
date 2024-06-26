@@ -30,7 +30,7 @@ function OlMap() {
 
   // test passaggio valori da form
   const { state } = useLocation()
-  const { searchType } = state;
+  // const { searchType } = state;
 
   var map: Map;
 
@@ -107,11 +107,12 @@ function OlMap() {
     modify = new Modify({
       source: source
     });
+    snap = new Snap({ 
+      source: source 
+    });
+    
     map.addInteraction(draw);
     map.addInteraction(modify);
-
-
-    snap = new Snap({ source: source });
     map.addInteraction(snap);
 
     // const modify = new Modify({ source: source });
