@@ -1,7 +1,7 @@
 // import libreria openlayer
 import { OSM } from "ol/source";
 import { useEffect, useState } from "react";
-import { Feature, Map, View } from 'ol';
+import { Feature, Map, MapBrowserEvent, View } from 'ol';
 import { fromLonLat, transform } from 'ol/proj';
 import Point from 'ol/geom/Point';
 import GeoJSON from 'ol/format/GeoJSON.js';
@@ -29,13 +29,22 @@ import {
     CommandList,
 } from "@/components/ui/command"
 import { Slider } from "@/components/ui/slider"
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
+
 
 
 
 import { LocateFixed, Heart, Pencil, Eraser, PencilRuler, Building2 } from "lucide-react";
 
 import VectorSource from "ol/source/Vector";
-import { Draw, Modify, Snap, Select } from 'ol/interaction.js';
+import { Draw, Modify, Snap, Select, DoubleClickZoom, Interaction } from 'ol/interaction.js';
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import { pointerMove } from 'ol/events/condition.js';
 import Style from "ol/style/Style";
@@ -48,28 +57,20 @@ import { Circle, Geometry, SimpleGeometry } from "ol/geom";
 import { Coordinate } from "ol/coordinate";
 
 import UserProfile from '../UserProfile.ts'
+import { FeatureLike } from "ol/Feature";
 
 
 function MapSearch(props: any) {
 
-    // ======== VARIABILI GLOBALI ========
-    // - mappa in ol    
-    var map: Map;
-    // - vectorLayer per la visualizzazione delle zone di ricerca
-    const source = new VectorSource({ wrapX: false });
-    const vector = new VectorLayer({
-        source: source,
-        style: {
-            'fill-color': 'rgba(99, 179, 237, 0.6)',
-            'stroke-color': '#2F4F4F',
-            'stroke-width': 2,
+    const [map, setMap] = useState<Map>();
+    const [layer, setLayer] = useState<VectorLayer<Feature<Geometry>>>();
 
-            'circle-radius': 7,
-            'circle-fill-color': '#ffcc33',
-        },
-    });
+
+    // ======== VARIABILI GLOBALI ========
+    // - mappa in ol  
+
     // - stile geofence selezionate
-    const selected = new Style({
+    const geofenceDeleteStyle = new Style({
         fill: new Fill({
             color: 'rgba(255, 99, 71, 0.6)',
         }),
@@ -78,6 +79,27 @@ function MapSearch(props: any) {
             width: 2,
         }),
     });
+
+    const geofenceNormalStyle = new Style({
+        fill: new Fill({
+            color: 'rgba(99, 179, 237, 0.6)',
+        }),
+        stroke: new Stroke({
+            color: '#2F4F4F',
+            width: 3,
+        }),
+    });
+
+    const geofenceHlightStyle = new Style({
+        fill: new Fill({
+            color: '#EEE',
+        }),
+        stroke: new Stroke({
+            color: '#3399CC',
+            width: 2,
+        }),
+    });
+
     // - coordinate centro bologna
     const bolognaCenter = {
         lon_lat: fromLonLat([11.3394883, 44.4938134]),
@@ -92,20 +114,29 @@ function MapSearch(props: any) {
             source: new OSM(),
         });
 
-        map = new Map({
+        const mapInstance = new Map({
             target: "map",
-            layers: [osmLayer, vector],
+            layers: [osmLayer],
             view: new View({
                 center: bolognaCenter.lon_lat,
                 zoom: bolognaCenter.zoom,
             }),
         });
 
-        return () => map.setTarget(undefined)
+        setMap(mapInstance);
+
+        return () => {
+            if (mapInstance)
+                mapInstance.setTarget(undefined);
+        }
     }, []);
+
 
     // funzioni movimento sulla mappa
     function centerBologna() {
+        if (!map)
+            return;
+
         let point = new Point(bolognaCenter.lon_lat);
 
         map.getView().fit(point, {
@@ -115,9 +146,12 @@ function MapSearch(props: any) {
         });
     }
 
+    var getSelectedFeatures:any = undefined;
+
     // funzione invio dei dati
     function searcFromInfo() {
-        var features = source.getFeatures()
+        var features = getSelectedFeatures()
+
         var geometries: Array<any> = [];
 
         features.forEach(feature => {
@@ -140,45 +174,188 @@ function MapSearch(props: any) {
             case "draw":
                 return geofenceSearch();
             case "address":
-                return addressSearch();
+                return 3
+            // return addressSearch();
         }
 
         return (<></>);
     }
 
-    
+    useEffect(() => {
+        // se la mappa non è definita o non sono stati recuperati i dati sulle zone
+        // non effettuo operazioni
+        if (!map)
+            return;
+
+        // se un nuovo layer È STATO definito lo aggiungo alla mappa
+        if (layer) {
+
+            map.removeLayer(layer);
+            map.addLayer(layer);
+            return;
+        }
+    }, [map, layer]);
+
+
 
     // metodi di ricerca
     // - ricerca tramite zona
     function zoneSearch() {
-        const fetchData = async () => {
-            const res = await fetch("http://localhost:4000/getZone");
-            const data = await res.json();
 
+        // variabile per mantenere i dati sulle zone
+        const [zonesData, setZonesData] = useState([]);
+        var selectedZones: FeatureLike[] = [];
+
+        getSelectedFeatures = () => {
+            return selectedZones;
+        }
+
+        useEffect(() => {
+            // "pesco" i dati sulle zone dal database è li salvo su zonesData 
+            fetch("http://localhost:4000/getZone")
+                .then(response => response.json())
+                .then(data => {
+                    setZonesData(data)
+                })
+                .catch(error => {
+                    console.error('Errore nella fetch:', error);
+                });
+
+        }, []);
+
+        useEffect(() => {
+            // se la mappa non è definita o non sono stati recuperati i dati sulle zone
+            // non effettuo operazioni
+            if (zonesData.rows == undefined || layer)
+                return;
+
+            // se un layer NON È STATO definito
+
+            // - creo una nuova "vector source"
+            const vectorSource = new VectorSource();
+
+            // - definisco conversione dal formato WKB
             const format = new WKB();
-            
-            var dataTest = data.rows[0];
 
-            const feature = format.readFeature(dataTest, {
-                dataProjection: 'EPSG:4326',
-                featureProjection: 'EPSG:3857'
+            // - per ogni zona che è stata "recuperata"
+            zonesData.rows.forEach(element => {
+
+                // prendo la geometria, 
+                // creo una feature con essa,
+                // la aggiungo alla "vector source"
+                var dataTest = element.geom;
+
+                const feature = format.readFeature(dataTest, {
+                    dataProjection: 'EPSG:4326',
+                    featureProjection: 'EPSG:3857'
+                });
+
+                vectorSource.addFeature(feature);
             });
-        
-            source.addFeature(feature);
-            
-            console.log(dataTest);
-        };
 
-        fetchData();
+            // - creo un nuovo vector layer con la source che ho creato
+            const newLayer = new VectorLayer({
+                source: vectorSource,
+                // stile delle feature (geometrie delle zone)
+                style: geofenceNormalStyle
+            })
+
+            // - lo imposto come layer attuale
+            setLayer(newLayer);
 
 
+        }, [zonesData, layer]);
 
-        return 1;
+        var callback = function (e: MapBrowserEvent<any>) {
+            if (!map)
+                return;
+
+            map.forEachFeatureAtPixel(e.pixel, function (f) {
+
+
+                const selIndex = selectedZones.indexOf(f);
+
+
+                if (selIndex < 0) {
+                    selectedZones.push(f);
+                    f.setStyle(geofenceHlightStyle);
+                    return;
+                } else {
+                    selectedZones.splice(selIndex, 1);
+                    f.setStyle(undefined);
+                }
+            });
+
+            console.log(selectedZones);
+        }
+
+        if (!map)
+            return;
+
+        map.on('singleclick', callback);
+
+        // Disabilito doppio click per evitare problemi con selezione veloce
+
+        var dblClickInteraction: Interaction = new Interaction();
+
+        // find DoubleClickZoom interaction
+        map.getInteractions().getArray().forEach(function (interaction) {
+            if (interaction instanceof DoubleClickZoom) {
+                dblClickInteraction = interaction;
+            }
+        });
+        // remove from map
+        map.removeInteraction(dblClickInteraction);
+
+        function CreateZoneList(){
+            if(!zonesData.rows)
+                return <>Non selezionati</>
+
+            return (
+                selectedZones.map((nomezona, index) => 
+                    <div className=" flex items-center space-x-4 rounded-md border p-4">
+                        {nomezona}
+                    </div>
+                )
+            )
+        }
+
+        return (
+            <>
+                <p className="m-3 text-center font-medium leading-none">Tocca le zone a cui sei interessato</p>
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Aree Selezionate</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {/* {CreateZoneList()} */}
+                    </CardContent>
+                    <CardFooter>
+                        <p>Card Footer</p>
+                    </CardFooter>
+                </Card>
+            </>
+        );
     }
 
 
     // - ricerca tramite geofence
     function geofenceSearch() {
+        const source = new VectorSource({ wrapX: false });
+        const vector = new VectorLayer({
+            source: source,
+            style: geofenceNormalStyle,
+        });
+
+        if (!map)
+            return
+
+        map.addLayer(vector);
+
+        getSelectedFeatures = () => {
+            return source.getFeatures();
+        }
+
         // ===== EVENTI MODIFICA GEOGENCE =====
         // - disegno di una geofence
         var draw = new Draw({
@@ -206,11 +383,14 @@ function MapSearch(props: any) {
         // - evento hover di una geofence nella modalità cancella
         const selectPointerMove = new Select({
             condition: pointerMove,
-            style: selected,
+            style: geofenceDeleteStyle,
         });
 
 
         function changeInteraction(interaction: string) {
+            if (!map)
+                return;
+
             map.removeInteraction(draw);
             map.removeInteraction(modify);
             map.removeInteraction(snap);
