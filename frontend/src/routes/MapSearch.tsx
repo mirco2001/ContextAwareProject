@@ -146,7 +146,7 @@ function MapSearch(props: any) {
         });
     }
 
-    var getSelectedFeatures:any = undefined;
+    var getSelectedFeatures: any = undefined;
 
     // funzione invio dei dati
     function searcFromInfo() {
@@ -174,8 +174,7 @@ function MapSearch(props: any) {
             case "draw":
                 return geofenceSearch();
             case "address":
-                return 3
-            // return addressSearch();
+                return addressSearch();
         }
 
         return (<></>);
@@ -243,9 +242,7 @@ function MapSearch(props: any) {
                 // prendo la geometria, 
                 // creo una feature con essa,
                 // la aggiungo alla "vector source"
-                var dataTest = element.geom;
-
-                const feature = format.readFeature(dataTest, {
+                const feature = format.readFeature(element.geom, {
                     dataProjection: 'EPSG:4326',
                     featureProjection: 'EPSG:3857'
                 });
@@ -307,12 +304,12 @@ function MapSearch(props: any) {
         // remove from map
         map.removeInteraction(dblClickInteraction);
 
-        function CreateZoneList(){
-            if(!zonesData.rows)
+        function CreateZoneList() {
+            if (!zonesData.rows)
                 return <>Non selezionati</>
 
             return (
-                selectedZones.map((nomezona, index) => 
+                selectedZones.map((nomezona, index) =>
                     <div className=" flex items-center space-x-4 rounded-md border p-4">
                         {nomezona}
                     </div>
@@ -439,26 +436,30 @@ function MapSearch(props: any) {
     // - ricerca tramite indirizzo
     function addressSearch() {
 
-        const [latitudine, setLatitudine] = useState<number>(0)
-        const [longitudine, setLongitudine] = useState<number>(0)
-        const addPoint = () => {
-            const point = new Point(fromLonLat([longitudine, latitudine])); // Cambia le coordinate secondo necessità
-            const feature = new Feature(point);
-
-            source.clear();
-            source.addFeature(feature);
-        };
-
-
         const [retrivenAddresses, setAddresses] = useState();
+        const [chosenAddress, setChosenAddress] = useState();
 
-        var raggio: number;
-        var coordinate: Coordinate;
+        useEffect(() => {
+            if (!chosenAddress || layer)
+                return;
+
+            
+            const vectorSource = new VectorSource();
 
 
+            const point = new Point(fromLonLat(chosenAddress));
+            const feature = new Feature(point);
+            
+            vectorSource.addFeature(feature);
 
+            console.log("feature creata", feature);
 
+            const newLayer = new VectorLayer({
+                source: vectorSource,
+            })
+            setLayer(newLayer);
 
+        }, [chosenAddress, layer]);
 
         function geocodingApiRequest(address: string) {
             if (address == "")
@@ -474,9 +475,6 @@ function MapSearch(props: any) {
                 .catch(error => console.log('error', error));
         }
 
-        console.log("render");
-
-
         function generateSuggestions(addresses: any) {
             if (addresses == null)
                 return;
@@ -484,18 +482,15 @@ function MapSearch(props: any) {
             if (addresses.features.length <= 0)
                 return;
 
-            console.log(addresses.features);
+            // console.log(addresses.features);
 
             return addresses.features.map((addres, index) =>
-
                 <CommandItem key={"address" + index}>
-                    <div className="flex flex-row content-center"
+                    <div className="w-full flex justify-start flex-row content-center"
                         onClick={() => {
-                            setLatitudine(addres.properties.lat)
-                            setLongitudine(addres.properties.lon)
-                            addPoint();
+                            setChosenAddress([addres.properties.lon, addres.properties.lat])
                         }}>
-                        <Building2 className="m-auto mr-2" />
+                        <Building2 className="my-auto mr-2" />
                         <div>
                             <p> {addres.properties.address_line1} </p>
                             <p className="text-sm text-muted-foreground"> {addres.properties.address_line2} </p>
