@@ -3,24 +3,14 @@ const express = require('express')
 const cors = require('cors')
 const pool = require('./db')
 const {spawn} = require('child_process')
+const fs = require('fs').promises;
+const path = require('path');
 
 const app = express()
 
 app.use(cors())
 app.use(express.json())
 
-
-// app.get("/post", async (req,res) => {
-//   try{
-//       const {number} =req.body;
-//       const query = await pool.query("INSERT INTO descriptions (number) VALUES($1) RETURNING *",[number]);
-//       const queryJSON = JSON.stringify(query);
-//       console.log(queryJSON);
-//       res.json(newToDo.rows[0]);
-//   }catch(err){
-//       console.error(err.message);
-//   }
-// });
 
 app.get("/get", async (req,res)=>{
     try {
@@ -83,6 +73,25 @@ app.get("/get", async (req,res)=>{
     }
 });
 
+app.post('/mapsearch', (req, res) => {
+  const { geom, formData } = req.body;
+  console.log('Received geom:', geom);
+  console.log('Received formData:', formData);
+
+  res.json({ message: 'Dati ricevuti con successo!', geom, formData });
+});
+
+app.post('/get', (req, res) => {
+  const data = req.body;
+  
+  for (const key in data) {
+    if (data.hasOwnProperty(key)) {
+      console.log(`Chiave: ${key}, Valore: ${data[key]}`);
+    }
+  }
+  res.send('Dati ricevuti con successo!');
+});
+
 const executePython = async (script) => {
   const py = spawn("python", [script]);
 
@@ -108,14 +117,6 @@ const executePython = async (script) => {
 }
 
 app.get('/', async (req, res) => {
-    // const query = await pool.query('SELECT * FROM descriptions');
-    // try {
-    //   const query = await pool.query('SELECT * FROM descriptions');
-    //   res.json(query.rows);
-    // } catch (err) {
-    //   console.error(err.message);
-    //   res.status(500).send();
-    // }
 
     try {
       const result = await executePython('python/Ml4.py');
@@ -125,6 +126,44 @@ app.get('/', async (req, res) => {
     }
 
   });
+
+
+  app.get('/moranIndex', async (req, res) => {
+
+    try {
+    
+      const jsonFilePath = path.join(__dirname, 'python', 'moranI.json');
+      
+      const jsonData = await fs.readFile(jsonFilePath, 'utf8');
+      
+      const jsonContent = JSON.parse(jsonData);
+      
+      res.json(jsonContent);
+    } catch (error) {
+      console.error('Error reading JSON file:', error);
+      res.status(500).json({ error: 'Failed to read JSON file' });
+    }
+
+  });
+
+  app.get('/moranData', async (req, res) => {
+
+    try {
+    
+      const jsonFilePath = path.join(__dirname, 'python', 'outputMoran.json');
+      
+      const jsonData = await fs.readFile(jsonFilePath, 'utf8');
+      
+      const jsonContent = JSON.parse(jsonData);
+      
+      res.json(jsonContent);
+    } catch (error) {
+      console.error('Error reading JSON file:', error);
+      res.status(500).json({ error: 'Failed to read JSON file' });
+    }
+
+  });
+
 
 app.listen(4000, () => {
   console.log('listening for requests on port 4000')
