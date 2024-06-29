@@ -19,79 +19,89 @@ import { Slider } from "@/components/ui/slider"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 
-
-
+// icone e stili
 import { Building2 } from "lucide-react";
-import Style from "ol/style/Style";
-import Icon from "ol/style/Icon";
 
-// - ricerca tramite indirizzo
 function AddressSearch(props: any) {
+    // dimensione standard del raggio di ricerca
     const defoultRadius: number = 500;
 
+    // variabili di stato per mantenere
+    // - lista degli indirizzi (geocodificati) corrispondenti alla ricerca
     const [retrivenAddresses, setAddresses] = useState();
+    // - posizione lon_lat dell'indirizzo scelto
     const [chosenAddress, setChosenAddress] = useState<Coordinate>();
+    // - dimensione del raggio di ricerca attuale
     const [searchRadius, setSearchRadius] = useState<number>(defoultRadius);
 
+    // ==== DISEGNO DELL'AREA DI RICERCA ====
+    // funzione che si attiva ogni volta che vengono aggiornati:
+    // - punto di ricerca
+    // - raggio di ricerca
     useEffect(() => {
-
+        // controllo che il layer sia valido
         if (!props.layer)
             return;
 
+        // estraggo la "sorgente" del layer e controllo che sia valida
         let vSource: VectorSource = props.layer.getSource();
 
         if (!vSource)
             return;
 
+        // controllo che effettivamente i dati di ricerca siano presenti
         if (!chosenAddress || !searchRadius)
             return
 
-        const circle = new Circle(fromLonLat(chosenAddress), searchRadius);
-
-        const iconStyle = new Style({
-            image: new Icon({
-                anchor: [0.5, 46],
-                anchorXUnits: 'fraction',
-                anchorYUnits: 'pixels',
-                src: '@/assets/piantinabologna.jpg',
-            }),
+        // definisco il cerchio di ricerca
+        const geofence = new Feature({
+            geometry: new Circle(fromLonLat(chosenAddress), searchRadius),
         });
 
+        // nel centrodell'are di ricerca posiziono un'icon come marker (un punto)
         const center = new Feature({
             geometry: new Point(fromLonLat(chosenAddress)),
-            style: iconStyle
         });
 
-
-        const feature = new Feature(circle);
-
+        // pulisco eventuali geofence precedenti e inserisco le nuove
         vSource.clear();
-        vSource.addFeature(feature);
+        vSource.addFeature(geofence);
         vSource.addFeature(center);
 
     }, [chosenAddress, searchRadius]);
 
+    // ==== GEOCODING INDIRIZZO RICERCATO ====
+    // funzione per effettuare la richiesta all'api per il geocoding
     function geocodingApiRequest(address: string) {
+        // controllo che sia stato specificato un indirizzo
         if (address == "")
             return;
 
+        // creo ed effettuo la richiesta
         var requestOptions = {
             method: 'GET',
         };
 
         fetch("https://api.geoapify.com/v1/geocode/autocomplete?text=" + address + "&apiKey=af9bd9269d274a5dabcf4bfef2f875e3", requestOptions)
             .then(response => response.json())
-            .then(result => setAddresses(result))
+            .then(
+                // se la richiesta va a buon aggiorno lo "stato" degli indirizzi trovati
+                result => setAddresses(result)
+            )
             .catch(error => console.log('error', error));
     }
 
+    // funzione per creare interfaccia con tutti gli indirizzi "pescati" dalla richiesta
     function generateSuggestions(addresses: any) {
+        // controllo che gli indirizzi siano validi
         if (addresses == null)
             return;
 
+        // controllo che ci siano stati dei risultati
         if (addresses.features.length <= 0)
             return;
 
+        // per ogni indirizzo ritrovato genero un "item"
         return addresses.features.map((addres, index: number) =>
             <CommandItem key={"address" + index}>
                 <div className="w-full flex justify-start flex-row content-center"

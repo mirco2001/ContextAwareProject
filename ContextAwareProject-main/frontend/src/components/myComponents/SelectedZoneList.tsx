@@ -1,25 +1,31 @@
-import { Feature } from 'ol'
-import React, { useEffect } from 'react'
+// import delle librerie di openlayer
+import { Feature } from "ol";
+import { Geometry } from "ol/geom";
 
-function SelectedZoneList(props: any) {    
-    function createZoneList(featureList : Feature[]){
-        console.log(featureList.length);
-        if (featureList.length <= 0)
-            return <div>Nessuna selezione</div>
 
-        
+import { Separator } from "@/components/ui/separator"
 
-        return featureList.length;
+
+// componente che rappresenta la lista delle aree selezionate
+function SelectedZoneList(props: any) {
+    
+    function createZoneList(features:Feature<Geometry>[]) {
+
+        return features.map((feature, index: number) =>
+            <div key={"zone"+index} className="flex flex-col text-center p-2">
+                <p className="p-1">{feature.get('name')}</p>
+                <Separator />
+            </div>
+        );
     }
 
-
+    if (props.featuresInfo <= 0)
+        return <p className="text-sm text-muted-foreground">Nessuna ancora zona selezionata</p>
 
     return (
-        <div>
-            {props.featuresInfo.map((feature) => {
-                <div>ciao</div>
-            })}
-        </div>
+        <>
+            {createZoneList(props.featuresInfo)}
+        </>
     )
 }
 

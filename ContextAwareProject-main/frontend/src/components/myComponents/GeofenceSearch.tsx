@@ -1,3 +1,9 @@
+// import della libreria openlayer
+import VectorSource from "ol/source/Vector";
+import { Draw, Modify, Snap, Select } from 'ol/interaction.js';
+import { pointerMove } from 'ol/events/condition.js';
+
+// import componenti shadecn
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
     HoverCard,
@@ -5,20 +11,23 @@ import {
     HoverCardTrigger,
 } from "@/components/ui/hover-card"
 
+// stili e icone
 import { Pencil, Eraser, PencilRuler } from "lucide-react";
 
-import VectorSource from "ol/source/Vector";
-import { Draw, Modify, Snap, Select } from 'ol/interaction.js';
-import { pointerMove } from 'ol/events/condition.js';
+// import di react
 import { useEffect } from "react";
 
 function GeofenceSearch(props: any) {
+    // variabili per le possibili interazioni che si possono avere con la mappa
     let draw:Draw, modify:Modify, snap:Snap, deleteOnClick:Select, selectPointerMove:Select;
 
+    // funzione che si attiva ogni volta che lo "stato" del layer viene aggiornato
     useEffect(() => {
+        // controllo che il layer sia valido
         if(!props.layer)
             return;
 
+        // estraggo la "sorgente" del layer e controllo che sia valida
         let vSource: VectorSource = props.layer.getSource();
 
         if (!vSource)
@@ -57,17 +66,20 @@ function GeofenceSearch(props: any) {
 
     }, [props.layer]);
 
-
+    // funzione che cambia le possibili azioni che si possono fare sulla mappa quando
+    // si va a cambiare la modalità di interazione con essa
     function changeInteraction(interaction: string) {
         if (!props.map)
             return;
 
+        // disattivo tutte le interazioni
         props.map.removeInteraction(draw);
         props.map.removeInteraction(modify);
         props.map.removeInteraction(snap);
         props.map.removeInteraction(deleteOnClick);
         props.map.removeInteraction(selectPointerMove);
 
+        // a seconda della modalità ri attivo solo quelle necessarie
         switch (interaction) {
             case "draw":
                 props.map.addInteraction(draw);
