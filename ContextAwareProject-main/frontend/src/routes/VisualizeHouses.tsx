@@ -95,6 +95,35 @@ function HouseVisualization() {
     }, []);
 
     useEffect(() => {
+        fetch('http://localhost:4000/moranData', {
+            method: 'GET',
+            headers: {
+              "Content-Type": "application/json",
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Errore nella fetch:', error);
+        });
+        fetch('http://localhost:4000/moranIndex', {
+            method: 'GET',
+            headers: {
+              "Content-Type": "application/json",
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Errore nella fetch:', error);
+        });
+    }, []);
+
+    useEffect(() => {
         //console.log(dataPOI);
         if (!map) return;
         // console.log(poiLayer)

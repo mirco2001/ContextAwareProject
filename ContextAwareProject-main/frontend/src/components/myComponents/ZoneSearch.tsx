@@ -31,7 +31,7 @@ function ZoneSearch(props: any) {
     
 
     useEffect(() => {
-        // "pesco" i dati sulle zone dal database è li salvo su zonesData 
+        // "pesco" i dati sulle zone dal database e li salvo su zonesData 
         fetch("http://localhost:4000/getZone")
             .then(response => response.json())
             .then(data => {
