@@ -1,17 +1,34 @@
-import { MapBrowserEvent } from "ol";
-import { FeatureLike } from "ol/Feature";
 import WKB from "ol/format/WKB";
-import { Interaction, DoubleClickZoom } from "ol/interaction";
 import VectorSource from "ol/source/Vector";
 import { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "../ui/card";
+import Style from "ol/style/Style";
+import Text from 'ol/style/Text.js';
+import Fill from "ol/style/Fill";
+import Stroke from "ol/style/Stroke";
+
+import {
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader,
+    CardTitle,
+} from "@/components/ui/card"
+
+
+
+import SelectedZoneList from "./SelectedZoneList";
+import { MapBrowserEvent, Feature } from "ol";
+import { FeatureLike } from "ol/Feature";
+import { Interaction, DoubleClickZoom } from "ol/interaction";
 
 
 function ZoneSearch(props: any) {
 
     // variabile per mantenere i dati sulle zone
     const [zonesData, setZonesData] = useState([]);
-    var selectedZones: FeatureLike[] = [];
+    const [test, setTest] = useState<number>(11);
+
+    
 
     useEffect(() => {
         // "pesco" i dati sulle zone dal database è li salvo su zonesData 
@@ -25,6 +42,27 @@ function ZoneSearch(props: any) {
             });
 
     }, []);
+
+    function normalStyleWithName(zoneName: string) {
+        let newStyle: Style = props.geofenceNormalStyle.clone();
+
+
+        let zoneNameText: Text = new Text({
+            text: zoneName,
+            font: 'bold 12px Arial',
+            fill: new Fill({
+                color: '#000000'
+            }),
+            stroke: new Stroke({
+                color: '#ffffff',
+                width: 3
+            })
+        })
+
+        newStyle.setText(zoneNameText)
+
+        return newStyle
+    }
 
     useEffect(() => {
         if (zonesData.rows == undefined || !props.layer)
@@ -51,6 +89,9 @@ function ZoneSearch(props: any) {
                 featureProjection: 'EPSG:3857'
             });
 
+            feature.setStyle(normalStyleWithName(element.nomezona));
+            feature.set('name', element.nomezona);
+
             vSource.addFeature(feature);
         });
 
@@ -62,24 +103,22 @@ function ZoneSearch(props: any) {
         if (!props.map)
             return;
 
-        props.map.forEachFeatureAtPixel(e.pixel, function (f: any) {
+        props.map.forEachFeatureAtPixel(e.pixel, function (f: Feature) {
 
-
-            const selIndex = selectedZones.indexOf(f);
-
+            const selIndex = props.featuresInfo.indexOf(f);
 
             if (selIndex < 0) {
-                selectedZones.push(f);
+                props.featuresInfo.push(f);
                 f.setStyle(props.geofenceHlightStyle);
                 return;
             } else {
-                selectedZones.splice(selIndex, 1);
-                f.setStyle(undefined);
+                props.featuresInfo.splice(selIndex, 1);
+                f.setStyle(normalStyleWithName(f.get('name')));
             }
         });
 
-        console.log(selectedZones);
-        props.setFeaturesInfo(selectedZones)
+        props.setFeaturesInfo(props.featuresInfo);
+        setTest(22);
     }
 
     useEffect(() => {
@@ -104,21 +143,6 @@ function ZoneSearch(props: any) {
 
     }, [props.map]);
 
-
-
-    function CreateZoneList() {
-        if (!zonesData.rows)
-            return <>Non selezionati</>
-
-        return (
-            selectedZones.map((nomezona, index) =>
-                <div className=" flex items-center space-x-4 rounded-md border p-4">
-                    {nomezona}
-                </div>
-            )
-        )
-    }
-
     return (
         <>
             <p className="m-3 text-center font-medium leading-none">Tocca le zone a cui sei interessato</p>
@@ -127,7 +151,7 @@ function ZoneSearch(props: any) {
                     <CardTitle>Aree Selezionate</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {/* {CreateZoneList()} */}
+                    {props.featuresInfo.length}
                 </CardContent>
                 <CardFooter>
                     <p>Card Footer</p>

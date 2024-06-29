@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Feature, Map, View } from 'ol';
 import { fromLonLat } from 'ol/proj';
 import Point from 'ol/geom/Point';
+import GeoJSON from 'ol/format/GeoJSON.js';
 
 // import componenti shadecn
 import { Button } from "@/components/ui/button"
@@ -12,9 +13,11 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable"
+import {
+    Card,
+} from "@/components/ui/card"
 
 
-import ZoneSearch from "@/components/myComponents/ZoneComponent.tsx";
 
 import { LocateFixed, Heart } from "lucide-react";
 
@@ -25,14 +28,18 @@ import Stroke from "ol/style/Stroke";
 
 // import componenti react
 import { Link } from "react-router-dom";
-import { Geometry, SimpleGeometry } from "ol/geom";
+import { Geometry, Polygon } from "ol/geom";
 
 import UserProfile from '../UserProfile.ts'
-import GeofenceSearch from "@/components/myComponents/GeofenceComponent.tsx";
-import AddressSearch from "@/components/myComponents/AddressSearch.tsx";
 import VectorSource from "ol/source/Vector";
+import Icon from "ol/style/Icon";
 
+import "./HomePage.css"
+import { Coordinate } from "ol/coordinate";
 
+import AddressSearch from "@/components/myComponents/AddressSearch.tsx";
+import ZoneSearch from "@/components/myComponents/ZoneSearch.tsx";
+import GeofenceSearch from "@/components/myComponents/GeofenceSearch.tsx";
 
 function MapSearch(props: any) {
 
@@ -57,27 +64,31 @@ function MapSearch(props: any) {
 
     const geofenceNormalStyle = new Style({
         fill: new Fill({
-            color: 'rgba(99, 179, 237, 0.6)',
+            color: 'rgba(255, 255, 255, 0.6)',
         }),
         stroke: new Stroke({
-            color: '#2F4F4F',
-            width: 3,
+            color: 'rgb(0, 0, 0)',
+            width: 2,
         }),
+        image: new Icon({
+            anchor: [0.5, 1],
+            src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLW1hcC1waW4iPjxwYXRoIGQ9Ik0yMCAxMGMwIDYtOCAxMi04IDEycy04LTYtOC0xMmE4IDggMCAwIDEgMTYgMFoiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjEwIiByPSIzIi8+PC9zdmc+'
+        })
     });
 
     const geofenceHlightStyle = new Style({
         fill: new Fill({
-            color: '#EEE',
+            color: 'rgba(0, 0, 0, 0.6)',
         }),
         stroke: new Stroke({
-            color: '#3399CC',
+            color: 'rgb(0, 0, 0)',
             width: 2,
         }),
     });
 
     // - coordinate centro bologna
     const bolognaCenter = {
-        lon_lat: fromLonLat([11.3394883, 44.4938134]),
+        lon_lat: [11.3394883, 44.4938134],
         zoom: 14
     }
     // ===================================
@@ -93,7 +104,7 @@ function MapSearch(props: any) {
             target: "map",
             layers: [osmLayer],
             view: new View({
-                center: bolognaCenter.lon_lat,
+                center: fromLonLat(bolognaCenter.lon_lat),
                 zoom: bolognaCenter.zoom,
             }),
         });
@@ -104,6 +115,7 @@ function MapSearch(props: any) {
         let vectorSource = new VectorSource()
         let vectorLayer = new VectorLayer({
             source: vectorSource,
+            style: geofenceNormalStyle,
         })
         setLayer(vectorLayer);
 
@@ -115,24 +127,47 @@ function MapSearch(props: any) {
 
 
     // funzioni movimento sulla mappa
-    function centerBologna() {
+    function moveMapTo(position : Coordinate, zoom : number) {
         if (!map)
             return;
 
-        let point = new Point(bolognaCenter.lon_lat);
+        let point = new Point(fromLonLat(position));
 
         map.getView().fit(point, {
             padding: [100, 100, 100, 100],
-            maxZoom: bolognaCenter.zoom,
+            maxZoom: zoom,
             duration: 1000
         });
+    }
+
+    function circleToPolygon(circle, sides: number) {
+        const geometry = circle.getGeometry();
+
+        if (!geometry)
+            return
+
+        const center = geometry.getCenter();
+        const radius = geometry.getRadius();
+        const points = [];
+
+        for (let i = 0; i < sides; i++) {
+            const angle = (i * 2 * Math.PI) / sides;
+            const x = center[0] + radius * Math.cos(angle);
+            const y = center[1] + radius * Math.sin(angle);
+            points.push([x, y]);
+        }
+        points.push(points[0]); // chiudi il poligono
+
+        return new Feature(new Polygon([points]));
     }
 
     // funzione invio dei dati
     function searcFromInfo() {
         let features: Feature<Geometry>[];
 
+        // controllo il tipo di ricerca che si sta effettuando
         if (props.searchType != "zone") {
+            // prendo il layer e se è presente estraggo la sua sorgente
             if (!layer)
                 return;
 
@@ -141,30 +176,31 @@ function MapSearch(props: any) {
             if (!vSource)
                 return;
 
+            // prendo tutte le feature presenti nella sorgente
             features = vSource.getFeatures();
+
+            // nel caso in cui sto effettuando una ricerca per indirizzo
+            // converto il cerchio in un poligono
+            if (props.searchType == "address")
+                features = [circleToPolygon(features[0], 64)];
         }
         else
-            features = featuresInfo;
+            features = featuresInfo; // se sto cercando per zona dovrò prendere i dati dalla lista delle zone
+        // e non dalla sorgente del layer
 
-
-        console.log(features);
 
         if (!features)
             return;
 
-        var geometries: Array<any> = [];
-
-        features.forEach(feature => {
-            var featGeometry = feature.getGeometry()
-
-            if (featGeometry == undefined)
-                return;
-
-            if (featGeometry instanceof SimpleGeometry)
-                geometries.push(featGeometry.getCoordinates());
+        // converto le feature in GeoJSON indicando i "dati sulla proiezione"
+        var writer = new GeoJSON();
+        var geojsonStr = writer.writeFeatures(features, {
+            dataProjection: 'EPSG:4326',
+            featureProjection: 'EPSG:3857'
         });
 
-        console.log(UserProfile.getServicesPreference(), geometries);
+        // invio i dati
+        console.log(UserProfile.getServicesPreference(), geojsonStr);
     }
 
     useEffect(() => {
@@ -201,7 +237,7 @@ function MapSearch(props: any) {
                     variant="outline"
                     size="icon"
                     className="absolute bottom-5 left-5 z-10"
-                    onClick={centerBologna}>
+                    onClick={() => moveMapTo(bolognaCenter.lon_lat, bolognaCenter.zoom)}>
                     <LocateFixed className="h-4 w-4" />
                 </Button>
             </ResizablePanel>
@@ -209,32 +245,36 @@ function MapSearch(props: any) {
             <ResizableHandle />
 
             <ResizablePanel minSize={12} maxSize={25} className="flex flex-col justify-between">
-                {
-                    props.searchType == "zone" && <ZoneSearch
-                        geofenceNormalStyle={geofenceNormalStyle}
-                        geofenceHlightStyle={geofenceHlightStyle}
-                        map={map}
-                        layer={layer}
-                        setFeaturesInfo={setFeaturesInfo}
-                    />
-                }
+                <Card className="mx-4 px-4 py-8">
+                    {
+                        props.searchType == "zone" && <ZoneSearch
+                            geofenceNormalStyle={geofenceNormalStyle}
+                            geofenceHlightStyle={geofenceHlightStyle}
+                            map={map}
+                            layer={layer}
+                            featuresInfo={featuresInfo}
+                            setFeaturesInfo={setFeaturesInfo}
+                        />
+                    }
 
-                {
-                    props.searchType == "draw" && <GeofenceSearch
-                        geofenceNormalStyle={geofenceNormalStyle}
-                        geofenceDeleteStyle={geofenceDeleteStyle}
-                        map={map}
-                        layer={layer}
-                    />
-                }
+                    {
+                        props.searchType == "draw" && <GeofenceSearch
+                            geofenceNormalStyle={geofenceNormalStyle}
+                            geofenceDeleteStyle={geofenceDeleteStyle}
+                            map={map}
+                            layer={layer}
+                        />
+                    }
 
-                {
-                    props.searchType == "address" && <AddressSearch
-                        geofenceNormalStyle={geofenceNormalStyle}
-                        map={map}
-                        layer={layer}
-                    />
-                }
+                    {
+                        props.searchType == "address" && <AddressSearch
+                            geofenceNormalStyle={geofenceNormalStyle}
+                            map={map}
+                            layer={layer}
+                            moveMapTo={moveMapTo}
+                        />
+                    }
+                </Card>
                 <div className="flex flex-row mx-3 my-6 h-[8%]">
 
                     <Link to='../form'>

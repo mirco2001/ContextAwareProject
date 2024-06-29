@@ -2,6 +2,10 @@
 import { useEffect, useState } from "react";
 import { Feature } from 'ol';
 import { fromLonLat } from 'ol/proj';
+import VectorSource from "ol/source/Vector";
+import { Coordinate } from "ol/coordinate";
+import { Circle, Point } from "ol/geom";
+
 // import componenti shadecn
 import {
     Command,
@@ -12,46 +16,18 @@ import {
     CommandList,
 } from "@/components/ui/command"
 import { Slider } from "@/components/ui/slider"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Separator } from "@/components/ui/separator"
+
 
 
 import { Building2 } from "lucide-react";
-
-import VectorSource from "ol/source/Vector";
-import { Coordinate } from "ol/coordinate";
-import { Circle } from "ol/geom";
-
-
-// ==== nel caso ====
-
-// // Funzione per creare un poligono circolare
-// function createCircularPolygon(center, radius, numPoints) {
-//     var coords = [];
-//     for (var i = 0; i < numPoints; ++i) {
-//         var angle = (i * 2 * Math.PI) / numPoints;
-//         var x = center[0] + radius * Math.cos(angle);
-//         var y = center[1] + radius * Math.sin(angle);
-//         coords.push([x, y]);
-//     }
-//     // Chiude il poligono
-//     coords.push(coords[0]);
-
-//     // Crea un ol.geom.Polygon
-//     return new ol.geom.Polygon([coords]);
-// }
-
-// // Esempio di utilizzo
-// var center = [0, 0]; // Coordinate del centro del cerchio
-// var radius = 1000000; // Raggio del cerchio in metri (o altre unità di mappa)
-// var numPoints = 64; // Numero di punti per approssimare il cerchio
-
-// var circularPolygon = createCircularPolygon(center, radius, numPoints);
-
-// console.log(circularPolygon);
-// ==== nel caso ====
+import Style from "ol/style/Style";
+import Icon from "ol/style/Icon";
 
 // - ricerca tramite indirizzo
 function AddressSearch(props: any) {
-    const defoultRadius:number = 500;
+    const defoultRadius: number = 500;
 
     const [retrivenAddresses, setAddresses] = useState();
     const [chosenAddress, setChosenAddress] = useState<Coordinate>();
@@ -70,12 +46,28 @@ function AddressSearch(props: any) {
         if (!chosenAddress || !searchRadius)
             return
 
-        const point = new Circle(fromLonLat(chosenAddress), searchRadius);
+        const circle = new Circle(fromLonLat(chosenAddress), searchRadius);
 
-        const feature = new Feature(point);
+        const iconStyle = new Style({
+            image: new Icon({
+                anchor: [0.5, 46],
+                anchorXUnits: 'fraction',
+                anchorYUnits: 'pixels',
+                src: '@/assets/piantinabologna.jpg',
+            }),
+        });
+
+        const center = new Feature({
+            geometry: new Point(fromLonLat(chosenAddress)),
+            style: iconStyle
+        });
+
+
+        const feature = new Feature(circle);
 
         vSource.clear();
         vSource.addFeature(feature);
+        vSource.addFeature(center);
 
     }, [chosenAddress, searchRadius]);
 
@@ -100,15 +92,14 @@ function AddressSearch(props: any) {
         if (addresses.features.length <= 0)
             return;
 
-        // console.log(addresses.features);
-
-        return addresses.features.map((addres, index) =>
+        return addresses.features.map((addres, index: number) =>
             <CommandItem key={"address" + index}>
                 <div className="w-full flex justify-start flex-row content-center"
                     onClick={() => {
 
                         let addressLonLat: Coordinate = [addres.properties.lon, addres.properties.lat];
                         setChosenAddress(addressLonLat)
+                        props.moveMapTo(addressLonLat, 14)
                     }}>
                     <Building2 className="my-auto mr-2" />
                     <div>
@@ -122,24 +113,28 @@ function AddressSearch(props: any) {
 
     return (
         <>
-            <div className="">
+            <p className="m-3 text-center font-medium leading-none">Inserisci l'indirizzo a cui sei interessato</p>
+            <div className="rounded-lg border mb-8">
                 <Command className="h-10">
-                    <CommandInput id="test" placeholder="Type a command or search..." onInput={(e) =>
+                    <CommandInput placeholder="Indirizzo..." onInput={(e) =>
                         geocodingApiRequest(e.currentTarget.value)
                     } />
                     <CommandList></CommandList>
                 </Command>
-
+                <Separator className="" />
                 <Command>
                     <CommandList>
-                        <CommandEmpty>No results found.</CommandEmpty>
-                        <CommandGroup heading="Suggestions">
-                            {generateSuggestions(retrivenAddresses)}
-                        </CommandGroup>
+                        <ScrollArea className="h-[300px] p-2">
+                            <CommandEmpty>Nessun risultato trovato.</CommandEmpty>
+                            <CommandGroup heading="Suggestions">
+                                {generateSuggestions(retrivenAddresses)}
+                            </CommandGroup>
+                        </ScrollArea>
                     </CommandList>
                 </Command>
             </div>
 
+            <p className="m-3 text-center font-medium leading-none">Sei interessato fino a {searchRadius} m da lì</p>
             <Slider defaultValue={[defoultRadius]} max={5000} step={3}
                 onValueChange={(r) => { setSearchRadius(r[0]) }}
             />
