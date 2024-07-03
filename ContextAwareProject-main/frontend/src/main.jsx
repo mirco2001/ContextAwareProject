@@ -21,6 +21,7 @@ import MapSearch from "./routes/MapSearch"
 import OlMap from "./routes/OlMap"
 import RadioGroupForm from "./routes/form"
 import HouseVisualization from "./routes/VisualizeHouses"
+import SearchResult from "./routes/ShowSearchResult"
 
 const router = createBrowserRouter([
   {
@@ -50,7 +51,7 @@ const router = createBrowserRouter([
       },
       {
         path: "house",
-        element: <HouseVisualization/>
+        element: <SearchResult/>
       },
       {
         path: "form",

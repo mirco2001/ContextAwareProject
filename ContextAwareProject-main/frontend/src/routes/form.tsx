@@ -226,7 +226,7 @@ function RadioGroupForm() {
                         </div>
 
 
-                        <ScrollArea className="w-[100%] h-[600px] lg:w-[75%] rounded-md border">
+                        <ScrollArea className="w-[100%] h-[68vh] lg:w-[75%] rounded-md border">
 
                             <TabsContent value="Educativi_Ricreativi" className="transition-all items-center justify-center">
                                 {listQuestions(ServiziEducativiRicreativi)}

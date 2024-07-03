@@ -16,7 +16,7 @@ import {
 import {
     Card,
 } from "@/components/ui/card"
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 
 import { LocateFixed, Heart } from "lucide-react";
@@ -127,7 +127,7 @@ function MapSearch(props: any) {
 
 
     // funzioni movimento sulla mappa
-    function moveMapTo(position : Coordinate, zoom : number) {
+    function moveMapTo(position: Coordinate, zoom: number) {
         if (!map)
             return;
 
@@ -202,13 +202,14 @@ function MapSearch(props: any) {
         fetch('http://localhost:4000/prova', {
             method: 'POST',
             headers: {
-            'Content-Type': 'application/json'
+                'Content-Type': 'application/json'
             },
-            
+
             body: JSON.stringify({
                 geom: geojsonStr,
-                formData: UserProfile.getServicesPreference(),}),
-         });
+                formData: UserProfile.getServicesPreference(),
+            }),
+        });
 
         // invio i dati
         console.log(UserProfile.getServicesPreference(), geojsonStr);
@@ -243,7 +244,27 @@ function MapSearch(props: any) {
 
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel>
-                <div style={{ height: '100%', width: '100%' }} id="map" className="map-container" />
+
+
+
+                <Tabs defaultValue="account" className="w-full h-full">
+                    <TabsList>
+                        <TabsTrigger value="account">Account</TabsTrigger>
+                        <TabsTrigger value="password" onClick={() => {
+                            map?.setTarget(undefined)
+                            map?.setTarget("map")
+                            map?.updateSize()
+                            console.log("cuai");
+                            
+                        }}>Password</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="account">Make changes to your account here.</TabsContent>
+                    <TabsContent value="password" className="w-full h-full ">
+                        <div style={{ height: '100%', width: '100%' }} id="map" className="map-container" />
+                    </TabsContent>
+                </Tabs>
+
+
                 <Button
                     variant="outline"
                     size="icon"

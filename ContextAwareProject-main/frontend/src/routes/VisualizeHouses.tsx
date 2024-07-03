@@ -18,6 +18,7 @@ import {
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 import { LocateFixed, Heart } from "lucide-react";
 
@@ -35,11 +36,12 @@ interface PoiData {
 function HouseVisualization() {
 
     const navigate = useNavigate();
-    const [map,setMap] = useState(null);
-    const [dataPOI, setDataPOI] =  useState([]);
-    const [activeLayers, setActiveLayers] = useState<boolean[]>([]); 
+
+    const [map, setMap] = useState(null);
+    const [dataPOI, setDataPOI] = useState([]);
+    const [activeLayers, setActiveLayers] = useState<boolean[]>([]);
     const [layers, setLayers] = useState<VectorLayer[][]>([]);
-  
+
 
     // variabili globali
     // - mappa in ol    
@@ -48,7 +50,7 @@ function HouseVisualization() {
         lon_lat: fromLonLat([11.3394883, 44.4938134]),
         zoom: 14
     }
-    
+
 
     // creazione della mappa
     useEffect(() => {
@@ -79,118 +81,120 @@ function HouseVisualization() {
         fetch('http://localhost:4000/Poi', {
             method: 'GET',
             headers: {
-              "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
         })
-        .then(response => response.json())
-        .then(data => {
+            .then(response => response.json())
+            .then(data => {
 
-            //console.log(data);
-            setDataPOI(data);
-            
-        })
-        .catch(error => {
-            console.error('Errore nella fetch:', error);
-        });
+                //console.log(data);
+                setDataPOI(data);
+                console.log(data);
+                
+
+            })
+            .catch(error => {
+                console.error('Errore nella fetch:', error);
+            });
     }, []);
 
     useEffect(() => {
         fetch('http://localhost:4000/moranData', {
             method: 'GET',
             headers: {
-              "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
         })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-        })
-        .catch(error => {
-            console.error('Errore nella fetch:', error);
-        });
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Errore nella fetch:', error);
+            });
         fetch('http://localhost:4000/moranIndex', {
             method: 'GET',
             headers: {
-              "Content-Type": "application/json",
+                "Content-Type": "application/json",
             },
         })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-        })
-        .catch(error => {
-            console.error('Errore nella fetch:', error);
-        });
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            })
+            .catch(error => {
+                console.error('Errore nella fetch:', error);
+            });
     }, []);
 
     useEffect(() => {
         //console.log(dataPOI);
         if (!map) return;
         // console.log(poiLayer)
-            
-       /* const createFeaturesFromData = (dataArray: PoiData[][]): Feature[] => {
-            let features: Feature[] = [];
-        
-            dataArray.forEach(array => {
-                const arrayFeatures = array.map(item => {
-                    const coordinates = fromLonLat([item.longitude, item.latitude]);
-                    const feature = new Feature({
-                        geometry: new Point(coordinates),
-                    });
-                    const style = new Style({
-                        image: new Icon({
-                            src: 'https://openlayers.org/en/latest/examples/data/icon.png',
-                            scale: 0.5,
-                        }),
-                    });
-                    feature.setStyle(style);
-                    return feature;
+
+        /* const createFeaturesFromData = (dataArray: PoiData[][]): Feature[] => {
+             let features: Feature[] = [];
+         
+             dataArray.forEach(array => {
+                 const arrayFeatures = array.map(item => {
+                     const coordinates = fromLonLat([item.longitude, item.latitude]);
+                     const feature = new Feature({
+                         geometry: new Point(coordinates),
+                     });
+                     const style = new Style({
+                         image: new Icon({
+                             src: 'https://openlayers.org/en/latest/examples/data/icon.png',
+                             scale: 0.5,
+                         }),
+                     });
+                     feature.setStyle(style);
+                     return feature;
+                 });
+         
+                 features = features.concat(arrayFeatures);
+             });
+         
+             return features;
+         };
+             
+     
+             const features = createFeaturesFromData(dataPOI);
+     
+             const vectorSource = new VectorSource({
+                 features: features,
+             });
+     
+             const vectorLayer = new VectorLayer({
+                 source: vectorSource,
+             });
+             */
+        const newLayers = dataPOI.map((dataArray: PoiData[], index: number) => {
+            const arrayLayers = dataArray.map((item: PoiData) => {
+                const coordinates = fromLonLat([item.longitude, item.latitude]);
+                const feature = new Feature({
+                    geometry: new Point(coordinates),
                 });
-        
-                features = features.concat(arrayFeatures);
-            });
-        
-            return features;
-        };
-            
-    
-            const features = createFeaturesFromData(dataPOI);
-    
-            const vectorSource = new VectorSource({
-                features: features,
-            });
-    
-            const vectorLayer = new VectorLayer({
-                source: vectorSource,
-            });
-            */
-            const newLayers = dataPOI.map((dataArray: PoiData[], index: number) => {
-                const arrayLayers = dataArray.map((item: PoiData) => {
-                    const coordinates = fromLonLat([item.longitude, item.latitude]);
-                    const feature = new Feature({
-                        geometry: new Point(coordinates),
-                    });
-                    const style = new Style({
-                        image: new Icon({
-                            src: 'https://openlayers.org/en/latest/examples/data/icon.png',
-                            scale: 0.5,
-                        }),
-                    });
-                    feature.setStyle(style);
-    
-                    const vectorSource = new VectorSource({
-                        features: [feature],
-                    });
-    
-                    return new VectorLayer({
-                        source: vectorSource,
-                    });
+                const style = new Style({
+                    image: new Icon({
+                        src: 'https://openlayers.org/en/latest/examples/data/icon.png',
+                        scale: 0.5,
+                    }),
                 });
-    
-                return arrayLayers;
+                feature.setStyle(style);
+
+                const vectorSource = new VectorSource({
+                    features: [feature],
+                });
+
+                return new VectorLayer({
+                    source: vectorSource,
+                });
             });
 
-            setLayers(newLayers);
+            return arrayLayers;
+        });
+
+        setLayers(newLayers);
 
     }, [map, dataPOI]);
 
@@ -233,7 +237,7 @@ function HouseVisualization() {
 
     // funzioni movimento sulla mappa
     function centerBologna() {
-        if(map){
+        if (map) {
             let point = new Point(bolognaCenter.lon_lat);
 
 
@@ -251,19 +255,18 @@ function HouseVisualization() {
             const newState = [...prevState];
             newState[index] = !newState[index];
 
-            if(layers[index]){
+            if (layers[index]) {
                 if (newState[index]) {
                     layers[index].forEach((layer: any) => map.addLayer(layer));
                 } else {
                     layers[index].forEach((layer: any) => map.removeLayer(layer));
                 }
-    
+
             }
-        
+
             return newState;
         });
     };
-
 
     return (
 
@@ -282,38 +285,33 @@ function HouseVisualization() {
 
             <ResizableHandle />
 
-            {/* <Checkbox id="checkbox1" onClick={() => { setShowPoi(!showPoi) }} />
-            <label
-                htmlFor="checkbox1"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-                Visualizza PoI
-            </label>  */}
-
-            <div>
-                {dataPOI.map((dataArray: PoiData[], index: number) => (
-                    <div key={index}>
-                        <Checkbox 
-                            id={`checkbox${index}`} 
-                            checked={activeLayers[index]}
-                            onClick={() => handleCheckboxChange(index)} 
-                        />
-                        <label
-                            htmlFor={`checkbox${index}`}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                            {`Visualizza Layer ${dataArray[0].name}`}
-                        </label>
-                    </div>
-                ))}
-            </div>
-    
-
             <ResizablePanel minSize={10} maxSize={20} className="flex flex-col justify-between">
-                <div className="flex flex-row m-1">
-                    <Button variant="secondary" className="m-auto"><Heart /></Button>
-                    <Button className="m-auto flex-1">Cerca</Button>
-                </div>
+                <ToggleGroup type="multiple" className="flex flex-col">
+                    {
+                        dataPOI.map((dataArray: PoiData[], index: number) => (
+                            <>
+                                {/* <ToggleGroupItem value="bold" aria-label="Toggle bold">
+                                    <Bold className="h-4 w-4" />
+                                </ToggleGroupItem> */}
+
+
+                                <div key={index}>
+                                    
+
+                                    <Checkbox
+                                        checked={activeLayers[index]}
+                                        onClick={() => handleCheckboxChange(index)}
+                                    />
+
+                                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                        {` ${dataArray[0].name}`}
+                                    </label>
+                                </div>
+                            </>
+                        ))
+
+                    }
+                </ToggleGroup>
             </ResizablePanel>
 
         </ResizablePanelGroup>
