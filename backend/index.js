@@ -359,12 +359,9 @@ app.get('/datiForm', async(req,res)=>{
       querydin.push("ST_WITHIN(e.geom_casa,   ST_GeomFromWKB(E'\\\\x"+geomcoordinate[i]+"', 4326))");
 
     }
-    // newq = await pool.query(`CREATE MATERIALIZED VIEW Ed AS
-    //     SELECT ogc_fid, wkb_geometry, geo_point_2d
-    //     FROM edifici
-    //     WHERE ${querydin.join(' OR ')}`);
 
-        const Query = await pool.query(`
+
+        const QueryCase = await pool.query(`
         SELECT
             e.id_casa,
             e.geom_casa,
@@ -394,9 +391,46 @@ app.get('/datiForm', async(req,res)=>{
         WHERE ${querydin.join(' OR ')}
         ORDER BY punteggio DESC
         LIMIT 15;`);
+
+
+        const QueryAree = await pool.query(`
+          SELECT
+              ar.id_area,
+              ar.geom_area,
+              (COALESCE(numero_cinema, 0) * ${cinema}) +
+              (COALESCE(numero_farmacie, 0)*${farm}) +
+              (COALESCE(numero_supermercati, 0) * ${supermercati}) +
+              (COALESCE(numero_ristoranti, 0) * ${ristorante}) +
+              (COALESCE(numero_scuole, 0) * ${scuole}) +
+              (COALESCE(numero_sport, 0) * ${sport}) +
+              (COALESCE(numero_picnic, 0) * ${picnic}) +
+              (COALESCE(numero_giochi, 0) * ${areegiochi}) +
+              (COALESCE(numero_parchi, 0) * ${parchi}) +
+              (COALESCE(numero_palestre, 0) * ${pal}) +
+              (COALESCE(numero_doposcuola, 0) * ${dpscuola}) +
+              (COALESCE(numero_fermatebus, 0) * ${bus}) +
+              (COALESCE(numero_stazioniferroviarie, 0) * ${treno}) +
+              (COALESCE(numero_parcheggi, 0) * ${parcheggi}) +
+              (COALESCE(numero_colonnine, 0) * ${colonnine}) +
+              (COALESCE(numero_ospedali, 0) * ${ospedali}) +
+              (COALESCE(numero_banche, 0) * ${banche}) +
+              (COALESCE(numero_eventi, 0) * ${intrattenimento}) +
+              (COALESCE(numero_biblioteche, 0) * ${biblio}) +
+              (COALESCE(numero_musei, 0) * ${musei}) AS punteggio
+              
+          FROM
+              aree_selezionate ar
+          ORDER BY punteggio DESC`);
+    console.log(QueryAree);
             
-    const numQuery = Query.rows;
-    res.json(numQuery);
+    const numcase = QueryCase.rows;
+    const numaree = QueryAree.rows;
+    const response = {
+      infocase: numcase,
+      infoaree: numaree
+    }
+    
+    res.json(response);
 
   }catch (err){
       console.error(err.message);
