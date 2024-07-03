@@ -1,85 +1,416 @@
 // backend/index.js
+
 const express = require('express')
 const cors = require('cors')
 const pool = require('./db')
 const {spawn} = require('child_process')
 const fs = require('fs').promises;
 const path = require('path');
+const os = require('os');
+
 
 const app = express()
 
 app.use(cors())
 app.use(express.json())
 
+let cinema = 0;
+let picnic = 0;
+let sport = 0;
+let coordinatesj = [];
+let geomcoordinate = [];
+let banche = 0;
+let biblio = 0;
+let dpscuola = 0;
+let bus = 0;
+let treno = 0;
+let intrattenimento = 0;
+let musei = 0;
+let ospedali = 0;
+let parcheggi = 0;
+let colonnine = 0;
+let parchi = 0;
+let areegiochi = 0;
+let ristorante  = 0;
+let scuole = 0;
+let supermercati = 0;
+let farm = 0;
+let pal = 0;
+let coordinates;
 
-app.get("/get", async (req,res)=>{
-    try {
-      const pal = 5;
-      const farm = 2;
-      const cin = 4;
-     
-      const areabologna = await pool.query(`SELECT ST_AsText(wkb_geometry) AS wkb_geometry FROM areebologna WHERE ogc_fid=1`);
-      const geometry = areabologna.rows[0].wkb_geometry;
+app.get("/Poi", async (req,res) => {
+  try{
+      const coordinatesS = [];
+      const coordinatesB = [];
+      const coordinatesC = [];
+      const coordinatesBB = [];
+      const coordinatesCl = [];
+      const coordinatesDP = [];
+      const coordinatesF = [];
+      const coordinatesGB = [];
+      const coordinatesM = [];
+      const coordinatesE = [];
+      const coordinatesT = [];
+      const coordinatesSC = [];
+      const coordinatesR = [];
+      const coordinatesPC = [];
+      const coordinatesP = [];
+      const coordinatesPL = [];
+      const coordinatesO = [];
+      const coordinatesI = [];
+      const coordinatesFB = [];
+      const coordinatesCS = [];
+      const queryS = await pool.query(`SELECT * FROM supermercati`);
+      const queryJSONS = JSON.stringify(queryS);
+      const jsonObjectS = JSON.parse(queryJSONS);
+      const queryB = await pool.query(`SELECT * FROM banche`);
+      const queryJSONB = JSON.stringify(queryB);
+      const jsonObjectB = JSON.parse(queryJSONB);
+      const queryBB = await pool.query(`SELECT geo_point_2d->>'lon' as Longitudine, geo_point_2d->>'lat' as Latitudine FROM biblioteche`);
+      const queryJSONBB = JSON.stringify(queryBB);
+      const jsonObjectBB = JSON.parse(queryJSONBB);
+      const queryC = await pool.query(`SELECT geo_point_2d->>'lon' as Longitudine, geo_point_2d->>'lat' as Latitudine FROM cinema`);
+      const queryJSONC = JSON.stringify(queryC);
+      const jsonObjectC = JSON.parse(queryJSONC);
+      const queryCl = await pool.query(`SELECT geo_point_2d->>'lon' as Longitudine, geo_point_2d->>'lat' as Latitudine FROM colonnine`);
+      const queryJSONCl = JSON.stringify(queryCl);
+      const jsonObjectCl = JSON.parse(queryJSONCl);
+      const queryDP = await pool.query(`SELECT geo_point_2d->>'lon' as Longitudine, geo_point_2d->>'lat' as Latitudine FROM doposcuola`);
+      const queryJSONDP = JSON.stringify(queryDP);
+      const jsonObjectDP = JSON.parse(queryJSONDP);
+      const queryF = await pool.query(`SELECT * FROM farmacie`);
+      const queryJSONF = JSON.stringify(queryF);
+      const jsonObjectF = JSON.parse(queryJSONF);
+      const queryGB = await pool.query(`SELECT geo_point_2d->>'lon' as Longitudine, geo_point_2d->>'lat' as Latitudine FROM giochibimbi`);
+      const queryJSONGB = JSON.stringify(queryGB);
+      const jsonObjectGB = JSON.parse(queryJSONGB);
+      const queryM = await pool.query(`SELECT * FROM musei`);
+      const queryJSONM = JSON.stringify(queryM);
+      const jsonObjectM = JSON.parse(queryJSONM);
+      const queryE = await pool.query(`SELECT  ST_X(wkb_geometry) AS Longitudine, ST_Y(wkb_geometry) AS Latitudine FROM eventi`);
+      const queryJSONE = JSON.stringify(queryE);
+      const jsonObjectE = JSON.parse(queryJSONE);
+      const queryT = await pool.query(`SELECT  ST_X(wkb_geometry) AS Longitudine, ST_Y(wkb_geometry) AS Latitudine FROM stazioniferroviarie`);
+      const queryJSONT = JSON.stringify(queryT);
+      const jsonObjectT = JSON.parse(queryJSONT);
+      const querySC = await pool.query(`SELECT geo_point_2d->>'lon' as Longitudine, geo_point_2d->>'lat' as Latitudine FROM scuole`);
+      const queryJSONSC = JSON.stringify(querySC);
+      const jsonObjectSC = JSON.parse(queryJSONSC);
+      const queryR = await pool.query(`SELECT * FROM ristoranti`);
+      const queryJSONR = JSON.stringify(queryR);
+      const jsonObjectR = JSON.parse(queryJSONR);
+      const queryPC = await pool.query(`SELECT geo_point_2d->>'lon' as Longitudine, geo_point_2d->>'lat' as Latitudine FROM parchi`);
+      const queryJSONPC = JSON.stringify(queryPC);
+      const jsonObjectPC = JSON.parse(queryJSONPC);
+      const queryP = await pool.query(`SELECT geo_point_2d->>'lon' as Longitudine, geo_point_2d->>'lat' as Latitudine FROM parcheggi`);
+      const queryJSONP = JSON.stringify(queryP);
+      const jsonObjectP = JSON.parse(queryJSONP);
+      const queryPL = await pool.query(`SELECT * FROM palestre`);
+      const queryJSONPL = JSON.stringify(queryPL);
+      const jsonObjectPL = JSON.parse(queryJSONPL);
+      const queryO = await pool.query(`SELECT  ST_X(wkb_geometry) AS Longitudine, ST_Y(wkb_geometry) AS Latitudine FROM ospedali`);
+      const queryJSONO = JSON.stringify(queryO);
+      const jsonObjectO = JSON.parse(queryJSONO);
+      const queryI = await pool.query(`SELECT  ST_X(geom) AS Longitudine, ST_Y(geom) AS Latitudine FROM impianti_sportivi`);
+      const queryJSONI = JSON.stringify(queryI);
+      const jsonObjectI = JSON.parse(queryJSONI);
+      const queryFB = await pool.query(`SELECT  ST_X(wkb_geometry) AS Longitudine, ST_Y(wkb_geometry) AS Latitudine FROM fermatebus`);
+      const queryJSONFB = JSON.stringify(queryFB);
+      const jsonObjectFB = JSON.parse(queryJSONFB);
       
-      // const edificiQuery = await pool.query(`
-      //   SELECT ogc_fid, wkb_geometry 
-      //   FROM edifici 
-      //   WHERE ST_WITHIN(edifici.wkb_geometry, ST_GeomFromText('${geometry}', 4326))
-      // `);
+
       
-      // const edifici = edificiQuery.rows; // Ottieni i risultati effettivi della query
+
+      // Iterare attraverso l'array rows nel JSON
+      jsonObjectS.rows.forEach(item => {
+          const name = "Supermercati"
+          const longitude = item.Longitudine;
+          const latitude = item.Latitudine;
+          
+          // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+          coordinatesS.push({name, longitude, latitude });
+      });
+      jsonObjectB.rows.forEach(item => {
+        const  name ="Banche"
+        const longitude = item.Longitudine;
+        const latitude = item.Latitudine;
+        
+        // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+        coordinatesB.push({name, longitude, latitude });
+    });
+    jsonObjectBB.rows.forEach(item => {
+      const name = "Biblioteche"
+      const longitude = parseFloat(item.longitudine);
+      const latitude = parseFloat(item.latitudine);
       
-      const cinemaQuery = await pool.query(`
-       SELECT e.ogc_fid AS id_casa,
-       COUNT(c.*) AS numCinema
-        FROM (
-            SELECT ogc_fid, wkb_geometry
-            FROM edifici
-            WHERE ST_WITHIN(edifici.wkb_geometry, (
-                  SELECT wkb_geometry
-                  FROM areebologna
-                  WHERE ogc_fid = 1
-              ))
-        ) e
-        JOIN cinema c ON ST_DWithin(
-                            ST_Transform(c.wkb_geometry, 32633), 
-                            ST_Transform(e.wkb_geometry, 32633),
-                            100  
-                        )
-        GROUP BY e.ogc_fid
-        LIMIT 10`
-      );
-      
-      const numCinema = cinemaQuery.rows;
+      // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+      coordinatesBB.push({name, longitude, latitude });
+  });
+  jsonObjectC.rows.forEach(item => {
+    const name = "Cinema"
+    const longitude = parseFloat(item.longitudine);
+    const latitude = parseFloat(item.latitudine);
+    
+    // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+    coordinatesC.push({name, longitude, latitude });
+});
+jsonObjectCl.rows.forEach(item => {
+  const name = "Colonnine"
+  const longitude = parseFloat(item.longitudine);
+  const latitude = parseFloat(item.latitudine);
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesCl.push({name,longitude, latitude });
+});
+jsonObjectDP.rows.forEach(item => {
+  const name = "Dopo Scuola"
+  const longitude = parseFloat(item.longitudine);
+  const latitude = parseFloat(item.latitudine);
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesDP.push({name,longitude, latitude });
+});
+jsonObjectF.rows.forEach(item => {
+  const name = "Farmacie"
+  const longitude = parseFloat(item.xcoord);
+  const latitude = parseFloat(item.ycoord);
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesF.push({name,longitude, latitude });
+});
+jsonObjectGB.rows.forEach(item => {
+  const name = "Giochi Bimbi"
+  const longitude = parseFloat(item.longitudine);
+  const latitude = parseFloat(item.latitudine);
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesGB.push({name, longitude, latitude });
+});
+jsonObjectM.rows.forEach(item => {
+  const name = "Musei"
+  const longitude = parseFloat(item.longitudine);
+  const latitude = parseFloat(item.latitudine);
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesM.push({name, longitude, latitude });
+});
+jsonObjectE.rows.forEach(item => {
+  const name = "Eventi"
+  const longitude = item.longitudine;
+  const latitude = item.latitudine;
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesE.push({name, longitude, latitude });
+});
+jsonObjectT.rows.forEach(item => {
+  const name = "Stazioni Treno"
+  const longitude = item.longitudine;
+  const latitude = item.latitudine;
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesT.push({name, longitude, latitude });
+});
+jsonObjectSC.rows.forEach(item => {
+  const name = "Scuole"
+  const longitude = parseFloat(item.longitudine);
+  const latitude = parseFloat(item.latitudine);
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesSC.push({name,longitude, latitude });
+});
+jsonObjectR.rows.forEach(item => {
+  const name = "Ristoranti"
+  const longitude =item.Longitudine;
+  const latitude = item.Latitudine;
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesR.push({name,longitude, latitude });
+});
+jsonObjectPC.rows.forEach(item => {
+  const name = "Parchi"
+  const longitude = parseFloat(item.longitudine);
+  const latitude = parseFloat(item.latitudine);
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesPC.push({name,longitude, latitude });
+});
+jsonObjectP.rows.forEach(item => {
+  const name = "Parcheggi"
+  const longitude = parseFloat(item.longitudine);
+  const latitude = parseFloat(item.latitudine);
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesP.push({name,longitude, latitude });
+});
+jsonObjectPL.rows.forEach(item => {
+  const name = "Palestre"
+  const longitude =item.longitudine;
+  const latitude = item.latitudine;
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesPL.push({name,longitude, latitude });
+});
+jsonObjectO.rows.forEach(item => {
+  const name = "Ospedali"
+  const longitude = item.longitudine;
+  const latitude = item.latitudine;
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesO.push({name, longitude, latitude });
+});
+jsonObjectI.rows.forEach(item => {
+  const name = "Impianti Sportivi"
+  const longitude = item.longitudine;
+  const latitude = item.latitudine;
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesI.push({name, longitude, latitude });
+});
+jsonObjectFB.rows.forEach(item => {
+  const name = "Fermate Bus"
+  const longitude = item.longitudine;
+  const latitude = item.latitudine;
+  
+  // Creare un oggetto con le coordinate estratte e aggiungerlo all'array
+  coordinatesFB.push({name, longitude, latitude });
+});
+  
+      const cordinateArray = [coordinatesFB,coordinatesB,coordinatesS,coordinatesBB,coordinatesC,coordinatesCl,coordinatesDP, coordinatesF,  coordinatesGB,  coordinatesM,coordinatesE, coordinatesT, coordinatesSC,coordinatesR,coordinatesPC,coordinatesP,coordinatesPL,coordinatesO,coordinatesI]
+    res.json(cordinateArray);
+  }catch(err){
+      console.error(err.message);
+  }
+});
+
+app.get("/getZone", async (req, res) => {
+  try {
+    let areabologna = await pool.query(`SELECT * FROM public.areebologna`);
+    res.json(areabologna);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send();
+  }
+});
 
 
 
-      // const farmacie = await pool.query(`SELECT COUNT(*) as numfarmacie FROM farmacie WHERE ST_DWITHIN(farmacie.wkb_geometry, ST_GeomFromText('${geometry}', 4326),150)`);
-      // conslestre = await pool.query(`SELECT COUNT(*) as numpalestre FROM palestre WHERE ST_DWITHIN(palestre.wkb_geometry, ST_GeomFromText('${geometry}', 4326),150)`);
-      // const numPalestre = palestre.rows[0].numpalestre;
-      //const query = await pool.query(`SELECT Count(*) FROM cinema WHERE ogc_fid=${cinema}`);
-      
-      // In questo esempio, ST_AsText converte la geometria in una rappresentazione WKT (Well-Known Text), che è una stringa facilmente utilizzabile in SQL. Poi usi ST_GeomFromText nella seconda query per convertire la stringa WKT di nuovo in una geometria.
-      // Assicurati che il SRID (Spatial Reference System Identifier) sia corretto nella funzione ST_GeomFromText. In questo esempio ho usato 4326, che è il SRID per il sistema di coordinate WGS 84, ma dovresti sostituirlo con il SRID corretto per le tue geometrie.
-      const results = {
-        numCinema: numCinema,
-        // numPalestre: numPalestre,
-        // numFarmacie: numFarmacie
-      };
-      res.json(results);
-    } catch (err) {
+app.post('/datiForm', (req, res) => {
+  coordinatesj = [];
+ 
+  // Ricevi i dati inviati dal client
+  const {geom,formData} = req.body;
+  picnic = formData.vicinanza_areePicnic;
+  sport = formData.vicinanza_areeSport;
+  banche = formData.vicinanza_banche;
+  biblio = formData.vicinanza_biblioteche;
+  cinema = formData.vicinanza_cinema;
+  dpscuola = formData.vicinanza_dopoScuola;
+  bus = formData.vicinanza_fermateBus;
+  treno = formData.vicinanza_fermateTreno;
+  intrattenimento = formData.vicinanza_intrattenimentoNotturno;
+  musei = formData.vicinanza_museiGallerieArte;
+  ospedali = formData.vicinanza_ospedali;
+  parcheggi = formData.vicinanza_parcheggi;
+  colonnine = formData.vicinanza_parcheggiColonnine;
+  parchi = formData.vicinanza_parchi;
+  areegiochi = formData.vicinanza_parchiGiochi;
+  ristorante = formData.vicinanza_ristoranti;
+  scuole = formData.vicinanza_scuole;
+  supermercati = formData.vicinanza_supermercati;
+  farm = formData.vicinanza_farmacie;
+  pal = formData.vicinanza_palestre;
+  var a = JSON.parse(geom);
+  const features = a.features;
+    features.forEach(feature => {
+        const geometry = feature.geometry;
+        if (geometry.type === 'Polygon') {
+            var cg = geometry.coordinates[0];
+
+
+            // Crea un nuovo array con le coppie di coordinate nel formato corretto (longitudine spazio latitudine)
+            let formattedCoordinates = [];
+            cg.forEach(coordinate => {
+              formattedCoordinates.push(`${coordinate[0]} ${coordinate[1]}`);
+            });
+  
+            // Unisci le coordinate in una stringa separata da virgole
+            let formattedString = formattedCoordinates.join(',');
+
+            coordinatesj.push(formattedString);
+        }
+    });
+    console.log(coordinatesj);
+});
+
+
+app.get('/datiForm', async(req,res)=>{
+  try {
+
+    geomcoordinate = [];
+    querydin = [];
+    for (let i = 0; i < coordinatesj.length; i++) {
+      const query= `SELECT ST_SetSRID(ST_GeomFromText('POLYGON((${coordinatesj[i]}))'), 4326) AS geom`;
+      const result = await pool.query(query);
+      geomcoordinate.push(result.rows[0].geom);
+    }
+    console.log(geomcoordinate);
+    var i;
+    for (i=0; i <geomcoordinate.length; i++){
+      querydin.push("ST_WITHIN(e.geom_casa,   ST_GeomFromWKB(E'\\\\x"+geomcoordinate[i]+"', 4326))");
+
+    }
+    // newq = await pool.query(`CREATE MATERIALIZED VIEW Ed AS
+    //     SELECT ogc_fid, wkb_geometry, geo_point_2d
+    //     FROM edifici
+    //     WHERE ${querydin.join(' OR ')}`);
+
+        const Query = await pool.query(`
+        SELECT
+            e.id_casa,
+            e.geom_casa,
+            (COALESCE(numero_cinema, 0) * ${cinema}) +
+            (COALESCE(numero_farmacie, 0)*${farm}) +
+            (COALESCE(numero_supermercati, 0) * ${supermercati}) +
+            (COALESCE(numero_ristoranti, 0) * ${ristorante}) +
+            (COALESCE(numero_scuole, 0) * ${scuole}) +
+            (COALESCE(numero_sport, 0) * ${sport}) +
+            (COALESCE(numero_picnic, 0) * ${picnic}) +
+            (COALESCE(numero_giochi, 0) * ${areegiochi}) +
+            (COALESCE(numero_parchi, 0) * ${parchi}) +
+            (COALESCE(numero_palestre, 0) * ${pal}) +
+            (COALESCE(numero_doposcuola, 0) * ${dpscuola}) +
+            (COALESCE(numero_fermatebus, 0) * ${bus}) +
+            (COALESCE(numero_stazioniferroviarie, 0) * ${treno}) +
+            (COALESCE(numero_parcheggi, 0) * ${parcheggi}) +
+            (COALESCE(numero_colonnine, 0) * ${colonnine}) +
+            (COALESCE(numero_ospedali, 0) * ${ospedali}) +
+            (COALESCE(numero_banche, 0) * ${banche}) +
+            (COALESCE(numero_eventi, 0) * ${intrattenimento}) +
+            (COALESCE(numero_biblioteche, 0) * ${biblio}) +
+            (COALESCE(numero_musei, 0) * ${musei}) AS punteggio
+            
+        FROM
+            edifici_selezionati e
+        WHERE ${querydin.join(' OR ')}
+        ORDER BY punteggio DESC
+        LIMIT 15;`);
+            
+    const numQuery = Query.rows;
+    res.json(numQuery);
+
+  }catch (err){
       console.error(err.message);
       res.status(500).send();
-    }
-});
+  }
+  
+  });
 
-app.post('/mapsearch', (req, res) => {
-  const { geom, formData } = req.body;
-  console.log('Received geom:', geom);
-  console.log('Received formData:', formData);
 
-  res.json({ message: 'Dati ricevuti con successo!', geom, formData });
-});
+    
+
+
+
+
 
 app.post('/get', (req, res) => {
   const data = req.body;
@@ -116,7 +447,7 @@ const executePython = async (script) => {
   return result;
 }
 
-app.get('/', async (req, res) => {
+app.get('/predizione', async (req, res) => {
 
     try {
       const result = await executePython('python/Ml4.py');
