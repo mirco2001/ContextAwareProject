@@ -3,10 +3,8 @@ WORKDIR '/app'
 COPY package.json .
 COPY . .
 RUN npm install
-# RUN pip install scikit-learn
-# RUN pip install pandas
-# RUN pip install geopandas
-# RUN pip install pysal
-# RUN pip install folium
+RUN pip install scikit-learn==1.5.0
+RUN pip install pandas
+RUN npm install request
 EXPOSE 4000
 CMD ["node", "index.js"]

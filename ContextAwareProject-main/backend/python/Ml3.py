@@ -10,7 +10,7 @@ import os
 import pickle
 
 # Raccolta dei dati
-train_data = pd.read_csv('python/dati2.csv', delimiter=',')
+train_data = pd.read_csv('backend/python/dati2.csv', delimiter=',')
 
 train_data['Data'] = pd.to_datetime(train_data['Data'], format='%Y-%m-%d')
 train_data['Anno'] = train_data['Data'].dt.year  # Aggiungi l'anno come feature
@@ -45,13 +45,12 @@ rmse_train = np.sqrt(mean_squared_error(y_train, y_train_pred))
 mae_test = mean_absolute_error(y_test, y_test_pred)
 rmse_test = np.sqrt(mean_squared_error(y_test, y_test_pred))
 
-#print(f'Training MAE: {mae_train}')
-#print(f'Training RMSE: {rmse_train}')
-#print(f'Test MAE: {mae_test}')
-#print(f'Test RMSE: {rmse_test}')
+# print(f'Training MAE: {mae_train}')
+# print(f'Training RMSE: {rmse_train}')
+# print(f'Test MAE: {mae_test}')
+# print(f'Test RMSE: {rmse_test}')
 
-# Salvataggio del modello
-# save_dir = '/app/python/'
+# save_dir = 'backend/python'
 # a=joblib.dump(rf, os.path.join(save_dir, 'random_forest_model.pkl'))
 
 with open('random_forest_model.pkl', 'wb') as f:
