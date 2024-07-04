@@ -438,6 +438,52 @@ app.get('/datiForm', async(req,res)=>{
   });
 
 
+  app.get('/datiCluster', async(req,res)=>{
+    try {
+  
+      const queryCluster = await pool.query(`SELECT
+        cc.cid,
+        cc.centroide,
+        (COALESCE(vc.num_cinema, 0) * ${cinema}) +
+        (COALESCE(vc.num_farmacie, 0) * ${farm}) +
+        (COALESCE(vc.num_supermercati, 0) * ${supermercati}) +
+        (COALESCE(vc.num_ristoranti, 0) * ${ristorante}) +
+        (COALESCE(vc.num_scuole, 0) * ${scuole}) +
+        (COALESCE(vc.num_impiantisportivi, 0) * ${sport}) +
+        (COALESCE(vc.num_parchi, 0) * ${picnic}) +
+        (COALESCE(vc.num_giochibimbi, 0) * ${areegiochi}) +
+        (COALESCE(vc.num_parchi, 0) * ${parchi}) +
+        (COALESCE(vc.num_palestre, 0) * ${pal}) +
+        (COALESCE(vc.num_doposcuola, 0) * ${dpscuola}) +
+        (COALESCE(vc.num_fermatebus, 0) * ${bus}) +
+        (COALESCE(vc.num_stazioniferroviarie, 0) * ${treno}) +
+        (COALESCE(vc.num_parcheggi, 0) * ${parcheggi}) +
+        (COALESCE(vc.num_colonnine, 0) * ${colonnine}) +
+        (COALESCE(vc.num_ospedali, 0) * ${ospedali}) +
+        (COALESCE(vc.num_banche, 0) * ${banche}) +
+        (COALESCE(vc.num_eventi, 0) * ${intrattenimento}) +
+        (COALESCE(vc.num_biblioteche, 0) * ${biblio}) +
+        (COALESCE(vc.num_musei, 0) * ${musei}) AS punteggio
+    FROM
+        clustered_centroids cc
+    LEFT JOIN
+        vista_cluster_poi_aggregati vc ON cc.cid = vc.cid
+    ORDER BY punteggio DESC;`);
+  
+    const numcluster = queryCluster.rows;
+  
+    
+    res.json(numcluster);
+  
+    
+    }catch (err){
+      console.error(err.message);
+      res.status(500).send();
+  }
+  
+  });
+
+
 app.post('/get', (req, res) => {
   const data = req.body;
   
