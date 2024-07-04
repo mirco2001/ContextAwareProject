@@ -8,49 +8,21 @@ import { Button } from "@/components/ui/button"
 
 import { LocateFixed } from "lucide-react"
 
-import { Feature, Map as MapOl, View } from 'ol';
+import { Map as MapOl, View } from 'ol';
 import { fromLonLat } from "ol/proj"
-import { Point, Polygon } from "ol/geom"
+import { Point } from "ol/geom"
 import { useEffect, useState } from "react"
 import { Coordinate } from "ol/coordinate"
 import TileLayer from "ol/layer/Tile"
 import { OSM } from "ol/source"
 
 import PoiToggleList from "@/components/myComponents/PoiToggleList"
-import VectorSource from "ol/source/Vector";
-import VectorLayer from "ol/layer/Vector";
-import { Fill, Stroke, Style } from "ol/style";
 
-
-
-// ns no valore
-// HH prezzo alto
-const HHstyle = new Style({
-    fill: new Fill({
-        color: 'rgba(255, 99, 71, 0.6)',
-    }),
-    stroke: new Stroke({
-        color: 'rgba(0, 0, 0, 0.8)',
-        width: 2,
-    })
-})
-// HL prezzo alto neighboor basso
-const HLstyle = new Style({
-    fill: new Fill({
-        color: 'rgba(255,255,51, 0.6)',
-    }),
-    stroke: new Stroke({
-        color: 'rgba(0, 0, 0, 0.8)',
-        width: 2,
-    })
-})
 
 
 function SearchResult() {
 
     const [map, setMap] = useState<MapOl>();
-
-    const [moranData, setMoranData] = useState();
 
 
     useEffect(() => {
@@ -77,91 +49,6 @@ function SearchResult() {
         };
     }, []);
 
-    useEffect(() => {
-        fetch('http://localhost:4000/moranData', {
-            method: 'GET',
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            .then(response => response.json())
-            .then(data => {
-
-                setMoranData(data);
-
-            })
-            .catch(error => {
-                console.error('Errore nella fetch:', error);
-            });
-        fetch('http://localhost:4000/moranIndex', {
-            method: 'GET',
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            .then(response => response.json())
-            .then(data => {
-                // console.log(data);
-            })
-            .catch(error => {
-                console.error('Errore nella fetch:', error);
-            });
-    }, []);
-
-
-    useEffect(() => {
-        if (!moranData)
-            return;
-
-        let features: Feature[] = []
-
-        moranData.features.forEach(element => {
-
-            let coordinateBlock = element.geometry.coordinates[0];
-
-            const convertedCoordinates = coordinateBlock.map(coord => fromLonLat(coord));
-
-            // Crea un poligono
-            const polygon = new Polygon([convertedCoordinates]);
-
-            console.log(polygon.getCoordinates());
-
-            // Crea una feature con il poligono
-            const polygonFeature = new Feature(polygon);
-
-            console.log(element.properties.value_local_moran);
-            
-
-            switch (element.properties.value_local_moran) {
-                case "HL":
-                    polygonFeature.setStyle(HLstyle)
-                    break;
-                case "HH":
-                    polygonFeature.setStyle(HHstyle)
-                    break;
-
-            }
-
-
-
-            features.push(polygonFeature)
-        });
-
-        let source = new VectorSource({
-            features: features
-        })
-
-        let laysa = new VectorLayer({
-            source: source
-        })
-
-        map?.addLayer(laysa)
-
-        // map.addLayer(newLayer);
-
-    }, [moranData]);
-
-
     const bolognaCenter = {
         lon_lat: [11.3394883, 44.4938134],
         zoom: 14
@@ -183,7 +70,7 @@ function SearchResult() {
     return (
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel>
-                <div style={{ height: '100%', width: '100%' }} id="map" className="map-container" />
+                <div style={{ height: '100%', width: '100%' }} id="map" className="map-container"/>
                 <Button
                     variant="outline"
                     size="icon"

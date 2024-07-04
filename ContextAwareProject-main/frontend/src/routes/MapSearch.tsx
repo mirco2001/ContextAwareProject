@@ -1,7 +1,7 @@
 // import libreria openlayer
 import { OSM } from "ol/source";
 import { useEffect, useState } from "react";
-import { Feature, Map, View } from 'ol';
+import { Feature, Map as MapOl, View } from 'ol';
 import { fromLonLat } from 'ol/proj';
 import Point from 'ol/geom/Point';
 import GeoJSON from 'ol/format/GeoJSON.js';
@@ -40,16 +40,18 @@ import { Coordinate } from "ol/coordinate";
 import AddressSearch from "@/components/myComponents/AddressSearch.tsx";
 import ZoneSearch from "@/components/myComponents/ZoneSearch.tsx";
 import GeofenceSearch from "@/components/myComponents/GeofenceSearch.tsx";
+import MapMoran from "@/components/myComponents/MapMoran.tsx";
 
 function MapSearch(props: any) {
 
-    const [map, setMap] = useState<Map>();
+    // ======== VARIABILI GLOBALI ========
+    // - mappa in ol  
+    const [map, setMap] = useState<MapOl>();
+
     const [layer, setLayer] = useState<VectorLayer<Feature<Geometry>>>();
 
     const [featuresInfo, setFeaturesInfo] = useState<Feature<Geometry>[]>([])
 
-    // ======== VARIABILI GLOBALI ========
-    // - mappa in ol  
 
     // - stile geofence selezionate
     const geofenceDeleteStyle = new Style({
@@ -64,7 +66,7 @@ function MapSearch(props: any) {
 
     const geofenceNormalStyle = new Style({
         fill: new Fill({
-            color: 'rgba(255, 255, 255, 0.6)',
+            color: 'rgba(255, 255, 255, 0.5)',
         }),
         stroke: new Stroke({
             color: 'rgb(0, 0, 0)',
@@ -100,7 +102,7 @@ function MapSearch(props: any) {
             source: new OSM(),
         });
 
-        const mapInstance = new Map({
+        const mapInstance = new MapOl({
             target: "map",
             layers: [osmLayer],
             view: new View({
@@ -199,7 +201,7 @@ function MapSearch(props: any) {
             featureProjection: 'EPSG:3857'
         });
 
-        fetch('http://localhost:4000/prova', {
+        fetch('http://localhost:4000/datiForm', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -231,36 +233,35 @@ function MapSearch(props: any) {
     }, [map, layer]);
 
 
-
-    // metodi di ricerca
-    // - ricerca tramite zona
-
-
-
-    // - ricerca tramite geofence
-
-
     return (
-
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel>
 
 
 
-                <Tabs defaultValue="account" className="w-full h-full">
-                    <TabsList>
-                        <TabsTrigger value="account">Account</TabsTrigger>
-                        <TabsTrigger value="password" onClick={() => {
+                <Tabs defaultValue="selezione" className="w-full h-full relative">
+                    <TabsList className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-10">
+                        <TabsTrigger value="selezione" onClick={() => {
                             map?.setTarget(undefined)
                             map?.setTarget("map")
                             map?.updateSize()
-                            console.log("cuai");
-                            
-                        }}>Password</TabsTrigger>
+
+                        }}>
+                            Selezione
+                        </TabsTrigger>
+                        <TabsTrigger value="moran">
+                            Moran
+                        </TabsTrigger>
                     </TabsList>
-                    <TabsContent value="account">Make changes to your account here.</TabsContent>
-                    <TabsContent value="password" className="w-full h-full ">
+
+                    <TabsContent value="selezione" className="w-full h-full ">
                         <div style={{ height: '100%', width: '100%' }} id="map" className="map-container" />
+                    </TabsContent>
+                    <TabsContent value="moran" className="w-full h-full ">
+                        <MapMoran
+                            bolognaCenter={bolognaCenter}
+                            geofenceNormalStyle={geofenceNormalStyle}
+                        />
                     </TabsContent>
                 </Tabs>
 

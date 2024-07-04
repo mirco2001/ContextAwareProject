@@ -18,10 +18,12 @@ import ErrorPage from './ErrorPage';
 
 // pagine specifiche
 import MapSearch from "./routes/MapSearch"
-import OlMap from "./routes/OlMap"
 import RadioGroupForm from "./routes/form"
-import HouseVisualization from "./routes/VisualizeHouses"
 import SearchResult from "./routes/ShowSearchResult"
+import WorkerPath from "./routes/Job"
+import Isocrone from "./routes/Isocrone.tsx"
+
+import 'ol/ol.css';
 
 const router = createBrowserRouter([
   {
@@ -46,16 +48,20 @@ const router = createBrowserRouter([
         element: <MapSearch searchType="address" />
       },
       {
-        path: "mappa",
-        element: <OlMap/>
-      },
-      {
         path: "house",
         element: <SearchResult/>
       },
       {
         path: "form",
         element: <RadioGroupForm />
+      },
+      {
+        path: "workerPath",
+        element: <WorkerPath/>
+      },
+      {
+        path: "isocrone",
+        element: <Isocrone />
       },
     ]
   }
