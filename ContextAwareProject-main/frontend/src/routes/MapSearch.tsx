@@ -41,6 +41,7 @@ import AddressSearch from "@/components/myComponents/AddressSearch.tsx";
 import ZoneSearch from "@/components/myComponents/ZoneSearch.tsx";
 import GeofenceSearch from "@/components/myComponents/GeofenceSearch.tsx";
 import MapMoran from "@/components/myComponents/MapMoran.tsx";
+import MapPrediction from "@/components/myComponents/MapPrediction.tsx";
 
 function MapSearch(props: any) {
 
@@ -212,9 +213,6 @@ function MapSearch(props: any) {
                 formData: UserProfile.getServicesPreference(),
             }),
         });
-
-        // invio i dati
-        console.log(UserProfile.getServicesPreference(), geojsonStr);
     }
 
     useEffect(() => {
@@ -252,6 +250,9 @@ function MapSearch(props: any) {
                         <TabsTrigger value="moran">
                             Moran
                         </TabsTrigger>
+                        <TabsTrigger value="prediction">
+                            Predizione
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="selezione" className="w-full h-full ">
@@ -259,6 +260,12 @@ function MapSearch(props: any) {
                     </TabsContent>
                     <TabsContent value="moran" className="w-full h-full ">
                         <MapMoran
+                            bolognaCenter={bolognaCenter}
+                            geofenceNormalStyle={geofenceNormalStyle}
+                        />
+                    </TabsContent>
+                    <TabsContent value="prediction" className="w-full h-full ">
+                        <MapPrediction
                             bolognaCenter={bolognaCenter}
                             geofenceNormalStyle={geofenceNormalStyle}
                         />
@@ -310,11 +317,13 @@ function MapSearch(props: any) {
                 </Card>
                 <div className="flex flex-row mx-3 my-6 h-[8%]">
 
-                    <Link to='../form'>
+                    <Link to='../form' className="flex-none">
                         <Button variant="secondary" className="mr-4 h-full"><Heart /></Button>
                     </Link>
 
-                    <Button className="h-full flex-1" onClick={() => searcFromInfo()}>Cerca</Button>
+                    <Link to='../house' className="flex-1">
+                        <Button className="h-full w-full" onClick={() => searcFromInfo()}>Cerca</Button>
+                    </Link>
                 </div>
             </ResizablePanel>
 

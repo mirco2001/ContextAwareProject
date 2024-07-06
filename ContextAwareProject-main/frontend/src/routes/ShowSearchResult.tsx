@@ -49,6 +49,24 @@ function SearchResult() {
         };
     }, []);
 
+    useEffect(() => {
+        fetch('http://localhost:4000/datiForm', {
+            method: 'GET',
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then(response => response.json())
+            .then(data => {
+
+                console.log(data);
+                
+            })
+            .catch(error => {
+                console.error('Errore nella fetch:', error);
+            });
+    }, []);
+
     const bolognaCenter = {
         lon_lat: [11.3394883, 44.4938134],
         zoom: 14

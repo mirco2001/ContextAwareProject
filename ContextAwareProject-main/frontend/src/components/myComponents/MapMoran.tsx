@@ -1,3 +1,4 @@
+// import libreria openlayer
 import { Feature } from 'ol';
 import { fromLonLat } from "ol/proj"
 import { Polygon } from "ol/geom"
@@ -7,10 +8,12 @@ import { Fill, Stroke, Style } from "ol/style"
 import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
 import TextOl from 'ol/style/Text.js';
-
 import { Map as MapOl, View } from 'ol';
 import TileLayer from "ol/layer/Tile";
+import { Coordinate } from 'ol/coordinate';
+import { FeatureLike } from 'ol/Feature';
 
+// import componenti shadecn
 import {
     Card
 } from "@/components/ui/card"
@@ -20,8 +23,6 @@ import {
     HoverCardTrigger,
 } from "@/components/ui/hover-card"
 import { Separator } from "@/components/ui/separator"
-import { Coordinate } from 'ol/coordinate';
-import { FeatureLike } from 'ol/Feature';
 
 
 // LL prezzo basso vicino basso
@@ -255,28 +256,33 @@ function MapMoran(props: any) {
             features.push(polygonFeature)
         });
 
-        let source = new VectorSource({
+        let vectorSource = new VectorSource({
             features: features
         })
 
-        let laysa = new VectorLayer({
-            source: source
+        let vectorLayer = new VectorLayer({
+            source: vectorSource
         })
 
-        mapMoran?.addLayer(laysa)
+        mapMoran?.addLayer(vectorLayer)
 
     }, [moranData]);
 
     return (
         <div className="h-full w-full relative">
 
-            <div style={{ height: '100%', width: '100%' }} id="mapMoran" className="map-container">
+            <div style={{ height: '100%', width: '100%' }}
+                id="mapMoran"
+                className="map-container"
+                onMouseOut={() => {
+                    info.style.visibility = 'hidden';
+                }}>
                 <Card id="info" className='flex flex-row justify-around p-2 z-10 absolute pointer-events-none space-x-2'>
                     <div className='text-center'>Prezzo Medio <p className="text-l text-muted-foreground">{zoneAveragePrice} €</p></div>
 
                     <div className='border' />
 
-                    <div className='text-center'>P simulato <p className="text-l text-muted-foreground">{Math.round(pValueLocal * 1000)/10}%</p></div>
+                    <div className='text-center'>P simulato <p className="text-l text-muted-foreground">{Math.round(pValueLocal * 1000) / 10}%</p></div>
                 </Card>
             </div>
 
@@ -286,7 +292,7 @@ function MapMoran(props: any) {
 
                     <div className='border' />
 
-                    <div className='text-center'>P simulato <p className="text-xl text-muted-foreground">{Math.round(pValue * 1000)/10}%</p></div>
+                    <div className='text-center'>P simulato <p className="text-xl text-muted-foreground">{Math.round(pValue * 1000) / 10}%</p></div>
                 </div>
 
                 <Separator />

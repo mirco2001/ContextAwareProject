@@ -1,4 +1,5 @@
 // backend/index.js
+
 const express = require('express')
 const cors = require('cors')
 const pool = require('./db')
@@ -7,11 +8,12 @@ const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
 
+
 const app = express()
 
 app.use(cors())
-app.use(express.json())
-
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb'}));
 
 let cinema = 0;
 let picnic = 0;
@@ -352,6 +354,7 @@ app.get('/datiForm', async(req,res)=>{
       const result = await pool.query(query);
       geomcoordinate.push(result.rows[0].geom);
     }
+    console.log(geomcoordinate);
     var i;
     for (i=0; i <geomcoordinate.length; i++){
       querydin.push("ST_WITHIN(e.geom_casa,   ST_GeomFromWKB(E'\\\\x"+geomcoordinate[i]+"', 4326))");
@@ -484,6 +487,10 @@ app.get('/datiForm', async(req,res)=>{
   });
 
 
+
+
+
+
 app.post('/get', (req, res) => {
   const data = req.body;
   
@@ -567,33 +574,8 @@ app.get('/predizione', async (req, res) => {
 
   });
 
-  app.get('/isochrones', async (req, res) => {
-
-    var request = require('request');
-
-    request({
-      method: 'POST',
-      url: 'https://api.openrouteservice.org/v2/isochrones/foot-walking',
-      body: '{"locations":[[11.3394883, 44.4938134]],"range":[1000],"range_type":"time"}', //range tempo in secondi
-      headers: {
-        'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
-        'Authorization': '5b3ce3597851110001cf6248162e7ecb62784b71836d89d90e7548bf',
-        'Content-Type': 'application/json; charset=utf-8'
-      }}, function (error, response, body) {
-      // console.log('Status:', response.statusCode);
-      // console.log('Headers:', JSON.stringify(response.headers));
-      // console.log('Response:', body);
-      res.json(body);
-    });
-
-
-
-  });
-
 
 app.listen(4000, () => {
   console.log('listening for requests on port 4000')
 })
-
-
 
