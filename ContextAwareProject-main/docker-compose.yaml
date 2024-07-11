@@ -24,14 +24,16 @@ services:
     networks:
       - dbN
   
-  # frontend:
-  #   build: ./frontend
-  #   container_name: frontend_c
-  #   ports:
-  #     - '3000:3000'
+  frontend:
+    build: ./frontend
+    image: frontimage
+    container_name: frontend_c
+    ports:
+      - '3000:3000'
 
   backend:
     build: ./backend
+    image: backimage
     container_name: backend_c
     ports:
       - '4000:4000'

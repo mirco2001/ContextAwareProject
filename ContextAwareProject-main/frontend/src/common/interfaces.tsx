@@ -9,6 +9,7 @@ export interface HouseData {
 }
 
 export interface PoiData {
+    id: number,
     name: string;
     longitude: number;
     latitude: number;

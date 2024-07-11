@@ -45,10 +45,10 @@ rmse_train = np.sqrt(mean_squared_error(y_train, y_train_pred))
 mae_test = mean_absolute_error(y_test, y_test_pred)
 rmse_test = np.sqrt(mean_squared_error(y_test, y_test_pred))
 
-# print(f'Training MAE: {mae_train}')
-# print(f'Training RMSE: {rmse_train}')
-# print(f'Test MAE: {mae_test}')
-# print(f'Test RMSE: {rmse_test}')
+print(f'Training MAE: {mae_train}')
+print(f'Training RMSE: {rmse_train}')
+print(f'Test MAE: {mae_test}')
+print(f'Test RMSE: {rmse_test}')
 
 # save_dir = 'backend/python'
 # a=joblib.dump(rf, os.path.join(save_dir, 'random_forest_model.pkl'))

@@ -132,8 +132,21 @@ function RadioGroupForm() {
 
     function onSubmit(values: z.infer<typeof formSchema>) {
         UserProfile.setServicesPreference(values);
+        fetch('http://localhost:4000/datiForm', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+
+            body: JSON.stringify({
+                formData: UserProfile.getServicesPreference(),
+                
+            }),
+
+        });
         navigate(-1);
     }
+
 
 
     // imposto le risposte di defoult al form
@@ -174,10 +187,11 @@ function RadioGroupForm() {
                                     className="flex flex-row w-[100%] p-1 items-center justify-center"
                                 >
                                     <HeartCrack />
-                                    <RadioGroupItem value="1" checked={field.value === "1"} className={radio_red + ' h-9 w-9 '} />
-                                    <RadioGroupItem value="2" checked={field.value === "2"} className={radio_red + ' h-6 w-6 '} />
+                                    <RadioGroupItem value="0" checked={field.value === "0"} className={radio_red + ' h-9 w-9 '} />
+                                    <RadioGroupItem value="1" checked={field.value === "1"} className={radio_red + ' h-7 w-7 '} />
+                                    <RadioGroupItem value="2" checked={field.value === "2"} className={radio_yellow + ' h-5 w-5 '} />
                                     <RadioGroupItem value="3" checked={field.value === "3"} className={radio_yellow + ' h-5 w-5'} />
-                                    <RadioGroupItem value="4" checked={field.value === "4"} className={radio_green + ' h-6 w-6 '} />
+                                    <RadioGroupItem value="4" checked={field.value === "4"} className={radio_green + ' h-7 w-7 '} />
                                     <RadioGroupItem value="5" checked={field.value === "5"} className={radio_green + ' h-9 w-9 '} />
                                     <Heart />
                                 </RadioGroup>

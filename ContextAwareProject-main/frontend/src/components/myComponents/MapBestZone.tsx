@@ -75,9 +75,7 @@ function MapBestZone(props: any) {
         })
             .then(response => response.json())
             .then(data => {
-
                 setDatiZone(data.infoaree);
-
             })
             .catch(error => {
                 console.error('Errore nella fetch:', error);
@@ -92,7 +90,7 @@ function MapBestZone(props: any) {
 
         if (mapBestZone.getAllLayers().length > 1)
             return;
-
+       
 
         let maxScore: number, minScore: number;
         maxScore = minScore = parseInt(datiZone[0].punteggio);
@@ -145,7 +143,6 @@ function MapBestZone(props: any) {
 
 
             let colorString = "rgba(" + color.r + "," + color.g + "," + color.b + ", 0.6)";
-            console.log(colorString);
 
             feature.setStyle(coloredStyleWithName(feature.get("name"), colorString))
         });

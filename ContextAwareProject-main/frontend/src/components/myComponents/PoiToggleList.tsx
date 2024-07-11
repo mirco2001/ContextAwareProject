@@ -99,9 +99,15 @@ function PoiToggleList(props: any) {
 
                 const coordinates = fromLonLat([item.longitude, item.latitude]);
 
-                return new Feature({
+                const feature = new Feature({
                     geometry: new Point(coordinates),
+                    id: item.id,
+                    name: item.name,
+                    longitudine: item.longitude,
+                    latitudine: item.latitude
                 });
+                    
+                return feature;
             });
 
             const vectorSource = new VectorSource({
@@ -215,12 +221,14 @@ function PoiToggleList(props: any) {
         setsanitari_quotidiani_L(sanitari_quotidiani_L);
         setculturali_intrattenimento_L(culturali_intrattenimento_L);
 
-        props.setPoiLayers([
-            educativi_ricreativi_L,
-            trasporto_accessibilita_L,
-            sanitari_quotidiani_L,
-            culturali_intrattenimento_L
-        ])
+        if(props.setPoiLayers){
+            props.setPoiLayers([
+                educativi_ricreativi_L,
+                trasporto_accessibilita_L,
+                sanitari_quotidiani_L,
+                culturali_intrattenimento_L
+            ])
+        }
 
         setActiveLayers(activeLayersTemp);
 

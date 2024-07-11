@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-pgadmin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend-pgadmin
+  template:
+    metadata:
+      labels:
+        app: backend-pgadmin
+    spec:
+      containers:
+      - name: backend-pgadmin
+        image: dpage/pgadmin4:8.2
+        env:
+          - name: PGADMIN_DEFAULT_EMAIL
+            value: emanuelecorsi1@gmail.com
+          - name: PGADMIN_DEFAULT_PASSWORD
+            value: postgres
+          - name: PGADMIN_LISTEN_PORT
+            value: "5050"
+        ports:
+          - containerPort: 5050
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-pgadmin
+spec:
+  selector:
+    app: backend-pgadmin
+  ports:
+    - protocol: TCP
+      port: 5050
+      targetPort: 5050
+  type: LoadBalancer

@@ -20,7 +20,8 @@ import ErrorPage from './ErrorPage';
 import MapSearch from "./routes/MapSearch"
 import RadioGroupForm from "./routes/form"
 import SearchResult from "./routes/ShowSearchResult"
-import WorkerPath from "./routes/Job"
+import Cluster from "./routes/Cluster.tsx"
+import Edit from "./routes/Edit.tsx"
 
 import 'ol/ol.css';
 
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
     element: <Root />,
     errorElement: <ErrorPage />,
     children: [
+      {
+        index: true, // Questo indica che questa è la route di partenza
+        element: <HomePage />
+      },
       {
         path: "home",
         element: <HomePage />
@@ -55,8 +60,12 @@ const router = createBrowserRouter([
         element: <RadioGroupForm />
       },
       {
-        path: "workerPath",
-        element: <WorkerPath/>
+        path: "cluster",
+        element: <Cluster />
+      },
+      {
+        path: "edit",
+        element: <Edit />
       },
     ]
   }
