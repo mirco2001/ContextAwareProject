@@ -21,7 +21,6 @@ import MapSearch from "./routes/MapSearch"
 import RadioGroupForm from "./routes/form"
 import SearchResult from "./routes/ShowSearchResult"
 import WorkerPath from "./routes/Job"
-import Isocrone from "./routes/Isocrone.tsx"
 
 import 'ol/ol.css';
 
@@ -58,10 +57,6 @@ const router = createBrowserRouter([
       {
         path: "workerPath",
         element: <WorkerPath/>
-      },
-      {
-        path: "isocrone",
-        element: <Isocrone />
       },
     ]
   }

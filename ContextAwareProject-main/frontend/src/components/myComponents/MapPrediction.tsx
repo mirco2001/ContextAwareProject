@@ -24,6 +24,8 @@ import { Slider } from "@/components/ui/slider"
 // import componenti mui
 import { LineChart } from '@mui/x-charts/LineChart';
 
+import { getColor } from "@/lib/utils";
+
 interface predictionData {
     date: string;
     price: number;
@@ -317,8 +319,8 @@ function MapPrediction(props: any) {
                         </p>
                         <LineChart
                             className='m-auto'
-                            width={400}
-                            height={300}
+                            width={350}
+                            height={250}
                             margin={{
                                 left: 50,
                                 right: 30,
@@ -439,34 +441,6 @@ function MapPrediction(props: any) {
         }
     }
 
-    // funzione restituisce un colore C partendo da un valore V
-
-    // minimo             > V > massimo
-    // colore estremo min > C > colore estremo max
-    const getColor = (score: number, min: number, max: number) => {
-        const red = { r: 184, g: 42, b: 29 };
-        const yellow = { r: 176, g: 176, b: 18 };
-        const green = { r: 58, g: 140, b: 46 };
-
-        if (max === min) return { r: 58, g: 140, b: 46 };
-
-        let normalizedScore = (score - min) / (max - min);
-
-        let r, g, b;
-        if (normalizedScore < 0.5) {
-            normalizedScore *= 2;
-            r = Math.round(red.r + normalizedScore * (yellow.r - red.r));
-            g = Math.round(red.g + normalizedScore * (yellow.g - red.g));
-            b = Math.round(red.b + normalizedScore * (yellow.b - red.b));
-        } else {
-            normalizedScore = (normalizedScore - 0.5) * 2;
-            r = Math.round(yellow.r + normalizedScore * (green.r - yellow.r));
-            g = Math.round(yellow.g + normalizedScore * (green.g - yellow.g));
-            b = Math.round(yellow.b + normalizedScore * (green.b - yellow.b));
-        }
-        return { r: r, g: g, b: b };
-    }
-
     // funzione che restituisce il giusto stile basandosi su:
     // - zona 
     // - data
@@ -528,7 +502,10 @@ function MapPrediction(props: any) {
                 </Card>
             </div>
             <Card className='absolute bottom-5 right-5 px-4 py-2 flex flex-col space-y-4'>
-                <span className='flex align-baseline'>Data predizione <p className="text-xl text-muted-foreground ml-2">{predictionDate}</p></span>
+                <div className='flex items-baseline'>
+                    <span className='flex align-baseline'>Data predizione </span>
+                    <p className="text-xl text-muted-foreground ml-2">{predictionDate}</p>
+                </div>
 
                 <Slider defaultValue={[0]}
                     max={predictionNumber - 1}
@@ -540,7 +517,7 @@ function MapPrediction(props: any) {
                     } />
                 <Separator />
 
-                <div className='flex flex-row space-x-2'>
+                <div className='flex flex-row space-x-2 py-2'>
                     <p className='flex flex-row'>{Math.round(predictionMinMax[0])}€</p>
                     <Card className='h-6 w-full bg-gradient-to-r from-[rgb(58,140,46)] via-[rgb(176,176,18)] to-[rgb(184,42,29)]' />
                     <p>{Math.round(predictionMinMax[1])}€</p>

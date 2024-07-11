@@ -23,6 +23,7 @@ import {
     HoverCardTrigger,
 } from "@/components/ui/hover-card"
 import { Separator } from "@/components/ui/separator"
+import {geofenceNormalStyle} from '@/common/geofenceStyles';
 
 
 // LL prezzo basso vicino basso
@@ -227,7 +228,7 @@ function MapMoran(props: any) {
                     break;
 
                 default:
-                    featureStyle = props.geofenceNormalStyle;
+                    featureStyle = geofenceNormalStyle;
             }
 
             let newStyle: Style = featureStyle.clone();

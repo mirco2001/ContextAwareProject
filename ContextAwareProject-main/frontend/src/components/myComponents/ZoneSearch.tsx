@@ -26,6 +26,7 @@ import SelectedZoneList from "./SelectedZoneList";
 
 // stili e icone
 import { Trash } from "lucide-react";
+import {geofenceHlightStyle, geofenceNormalStyle} from "@/common/geofenceStyles";
 
 
 function ZoneSearch(props: any) {
@@ -54,8 +55,7 @@ function ZoneSearch(props: any) {
     // funzione che crea uno stile per le geofenceche uguale a quello base 
     // ma con scritto il nome della zona sopra
     function normalStyleWithName(zoneName: string) {
-        let newStyle: Style = props.geofenceNormalStyle.clone();
-
+        let newStyle: Style = geofenceNormalStyle.clone();
 
         let zoneNameText: Text = new Text({
             text: zoneName,
@@ -131,7 +131,7 @@ function ZoneSearch(props: any) {
             if (selIndex < 0) {
                 // se si la rimuovo dalla lista e gli metto lo stile "normale"
                 props.featuresInfo.push(f);
-                f.setStyle(props.geofenceHlightStyle);
+                f.setStyle(geofenceHlightStyle);
             } else {
                 // se no la aggiungo nella lista e gli metto lo stile "selezionato"
                 props.featuresInfo.splice(selIndex, 1);

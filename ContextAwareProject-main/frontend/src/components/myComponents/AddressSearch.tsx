@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator"
 
 // icone e stili
 import { Building2 } from "lucide-react";
+import { moveMapTo } from "@/lib/utils";
 
 function AddressSearch(props: any) {
     // dimensione standard del raggio di ricerca
@@ -109,7 +110,7 @@ function AddressSearch(props: any) {
 
                         let addressLonLat: Coordinate = [addres.properties.lon, addres.properties.lat];
                         setChosenAddress(addressLonLat)
-                        props.moveMapTo(addressLonLat, 14)
+                        moveMapTo(addressLonLat, 14, props.map)
                     }}>
                     <Building2 className="my-auto mr-2" />
                     <div>

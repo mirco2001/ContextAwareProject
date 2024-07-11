@@ -10,13 +10,15 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 
 import { Feature } from 'ol';
 import { fromLonLat } from "ol/proj"
-import { Geometry, Point } from "ol/geom"
+import { Point } from "ol/geom"
 import { useEffect, useState } from "react"
-import { Cluster } from "ol/source"
+// import { Cluster } from "ol/source"
 import { Fill, Icon, RegularShape, Style } from "ol/style"
 import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
 
+
+import { LayerInfo, PoiData } from "@/common/interfaces";
 
 
 const icons = new Map();
@@ -39,19 +41,7 @@ icons.set("Ristoranti", "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3d
 icons.set("Eventi", "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXBhcnR5LXBvcHBlciI+PHBhdGggZD0iTTUuOCAxMS4zIDIgMjJsMTAuNy0zLjc5Ii8+PHBhdGggZD0iTTQgM2guMDEiLz48cGF0aCBkPSJNMjIgOGguMDEiLz48cGF0aCBkPSJNMTUgMmguMDEiLz48cGF0aCBkPSJNMjIgMjBoLjAxIi8+PHBhdGggZD0ibTIyIDItMi4yNC43NWEyLjkgMi45IDAgMCAwLTEuOTYgMy4xMmMuMS44Ni0uNTcgMS42My0xLjQ1IDEuNjNoLS4zOGMtLjg2IDAtMS42LjYtMS43NiAxLjQ0TDE0IDEwIi8+PHBhdGggZD0ibTIyIDEzLS44Mi0uMzNjLS44Ni0uMzQtMS44Mi4yLTEuOTggMS4xMWMtLjExLjctLjcyIDEuMjItMS40MyAxLjIySDE3Ii8+PHBhdGggZD0ibTExIDIgLjMzLjgyYy4zNC44Ni0uMiAxLjgyLTEuMTEgMS45OEM5LjUyIDQuOSA5IDUuNTIgOSA2LjIzVjciLz48cGF0aCBkPSJNMTEgMTNjMS45MyAxLjkzIDIuODMgNC4xNyAyIDUtLjgzLjgzLTMuMDctLjA3LTUtMi0xLjkzLTEuOTMtMi44My00LjE3LTItNSAuODMtLjgzIDMuMDcuMDcgNSAyWiIvPjwvc3ZnPg==")
 icons.set("Cinema", "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWNsYXBwZXJib2FyZCI+PHBhdGggZD0iTTIwLjIgNiAzIDExbC0uOS0yLjRjLS4zLTEuMS4zLTIuMiAxLjMtMi41bDEzLjUtNGMxLjEtLjMgMi4yLjMgMi41IDEuM1oiLz48cGF0aCBkPSJtNi4yIDUuMyAzLjEgMy45Ii8+PHBhdGggZD0ibTEyLjQgMy40IDMuMSA0Ii8+PHBhdGggZD0iTTMgMTFoMTh2OGEyIDIgMCAwIDEtMiAySDVhMiAyIDAgMCAxLTItMloiLz48L3N2Zz4=");
 icons.set("Biblioteche", "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWJvb2stbWFya2VkIj48cGF0aCBkPSJNNCAxOS41di0xNUEyLjUgMi41IDAgMCAxIDYuNSAySDIwdjIwSDYuNWEyLjUgMi41IDAgMCAxIDAtNUgyMCIvPjxwb2x5bGluZSBwb2ludHM9IjEwIDIgMTAgMTAgMTMgNyAxNiAxMCAxNiAyIi8+PC9zdmc+");
-icons.set("Musei", "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWxhbmRtYXJrIj48bGluZSB4MT0iMyIgeDI9IjIxIiB5MT0iMjIiIHkyPSIyMiIvPjxsaW5lIHgxPSI2IiB4Mj0iNiIgeTE9IjE4IiB5Mj0iMTEiLz48bGluZSB4MT0iMTAiIHgyPSIxMCIgeTE9IjE4IiB5Mj0iMTEiLz48bGluZSB4MT0iMTQiIHgyPSIxNCIgeTE9IjE4IiB5Mj0iMTEiLz48bGluZSB4MT0iMTgiIHgyPSIxOCIgeTE9IjE4IiB5Mj0iMTEiLz48cG9seWdvbiBwb2ludHM9IjEyIDIgMjAgNyA0IDciLz48L3N2Zz4=")
-
-interface PoiData {
-    name: string;
-    longitude: number;
-    latitude: number;
-}
-
-interface LayerInfo {
-    layerName: string,
-    layerIcon: string,
-    layer: VectorLayer<Feature<Geometry>>
-}
+icons.set("Musei", "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLWxhbmRtYXJrIj48bGluZSB4MT0iMyIgeDI9IjIxIiB5MT0iMjIiIHkyPSIyMiIvPjxsaW5lIHgxPSI2IiB4Mj0iNiIgeTE9IjE4IiB5Mj0iMTEiLz48bGluZSB4MT0iMTAiIHgyPSIxMCIgeTE9IjE4IiB5Mj0iMTEiLz48bGluZSB4MT0iMTQiIHgyPSIxNCIgeTE9IjE4IiB5Mj0iMTEiLz48bGluZSB4MT0iMTgiIHgyPSIxOCIgeTE9IjE4IiB5Mj0iMTEiLz48cG9seWdvbiBwb2ludHM9IjEyIDIgMjAgNyA0IDciLz48L3N2Zz4=");
 
 const iconColors = {
     standard: "rgba(0, 0, 0, 1)",
@@ -68,7 +58,7 @@ const toggleColors = {
     culturali_intrattenimento: " data-[state=on]:bg-[rgba(255,173,5,0.6)] data-[state=off]:bg-[rgba(255,173,5,0.1)]"
 }
 
-function PoiToggleList(props:any) {
+function PoiToggleList(props: any) {
     const [dataPOI, setDataPOI] = useState([]);
 
     const [activeLayers, setActiveLayers] = useState<Map<string, boolean>>();
@@ -97,8 +87,9 @@ function PoiToggleList(props:any) {
     }, []);
 
     useEffect(() => {
-        if (!props.map || props.map.getLayers().getLength() > 1)
+        if (!props.map || activeLayers?.keys())
             return;
+
 
         let activeLayersTemp: Map<string, boolean> = new Map();
 
@@ -117,14 +108,14 @@ function PoiToggleList(props:any) {
                 features: layerFeatures,
             });
 
-            const clusterSource = new Cluster({
-                distance: 40,
-                minDistance: 20,
-                source: vectorSource,
-            });
+            // const clusterSource = new Cluster({
+            //     distance: 40,
+            //     minDistance: 20,
+            //     source: vectorSource,
+            // });
 
             let newLayer = new VectorLayer({
-                source: clusterSource,
+                source: vectorSource,
             });
 
             let iconSrc: string;
@@ -195,6 +186,7 @@ function PoiToggleList(props:any) {
             let layerInfo: LayerInfo = {
                 layer: newLayer,
                 layerIcon: iconSrc,
+                layerColor: iconColor,
                 layerName: dataArray[0].name
             };
 
@@ -222,6 +214,13 @@ function PoiToggleList(props:any) {
         setTrasporto_accessibilita_L(trasporto_accessibilita_L);
         setsanitari_quotidiani_L(sanitari_quotidiani_L);
         setculturali_intrattenimento_L(culturali_intrattenimento_L);
+
+        props.setPoiLayers([
+            educativi_ricreativi_L,
+            trasporto_accessibilita_L,
+            sanitari_quotidiani_L,
+            culturali_intrattenimento_L
+        ])
 
         setActiveLayers(activeLayersTemp);
 
@@ -279,7 +278,7 @@ function PoiToggleList(props:any) {
 
 
     return (
-        <>
+        <div className="h-full flex flex-col justify-around">
             <p className="m-3 text-center font-medium leading-none">Quali punti di interesse vuoi visualizzare?</p>
             <ScrollArea className="h-[75vh] rounded-md border p-4">
                 <Accordion type="multiple">
@@ -311,12 +310,15 @@ function PoiToggleList(props:any) {
 
             </ScrollArea>
 
-            <Button variant="destructive" onClick={
-                () => hideAllLayer()
-            }>
+            <Button
+                className="w-full"
+                variant="destructive"
+                onClick={
+                    () => hideAllLayer()
+                }>
                 Nascondi Tutto
             </Button>
-        </>
+        </div>
     );
 }
 

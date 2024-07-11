@@ -16,6 +16,7 @@ import { Pencil, Eraser, PencilRuler } from "lucide-react";
 
 // import di react
 import { useEffect } from "react";
+import { geofenceDeleteStyle } from "@/common/geofenceStyles";
 
 function GeofenceSearch(props: any) {
     // variabili per le possibili interazioni che si possono avere con la mappa
@@ -60,7 +61,7 @@ function GeofenceSearch(props: any) {
         // - evento hover di una geofence nella modalità cancella
         selectPointerMove = new Select({
             condition: pointerMove,
-            style: props.geofenceDeleteStyle,
+            style: geofenceDeleteStyle,
         });
 
 

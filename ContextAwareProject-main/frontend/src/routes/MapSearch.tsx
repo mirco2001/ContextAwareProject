@@ -3,7 +3,6 @@ import { OSM } from "ol/source";
 import { useEffect, useState } from "react";
 import { Feature, Map as MapOl, View } from 'ol';
 import { fromLonLat } from 'ol/proj';
-import Point from 'ol/geom/Point';
 import GeoJSON from 'ol/format/GeoJSON.js';
 
 // import componenti shadecn
@@ -22,9 +21,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { LocateFixed, Heart } from "lucide-react";
 
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
-import Style from "ol/style/Style";
-import Fill from "ol/style/Fill";
-import Stroke from "ol/style/Stroke";
 
 // import componenti react
 import { Link } from "react-router-dom";
@@ -32,16 +28,17 @@ import { Geometry, Polygon } from "ol/geom";
 
 import UserProfile from '../UserProfile.ts'
 import VectorSource from "ol/source/Vector";
-import Icon from "ol/style/Icon";
 
 import "./HomePage.css"
-import { Coordinate } from "ol/coordinate";
 
 import AddressSearch from "@/components/myComponents/AddressSearch.tsx";
 import ZoneSearch from "@/components/myComponents/ZoneSearch.tsx";
 import GeofenceSearch from "@/components/myComponents/GeofenceSearch.tsx";
 import MapMoran from "@/components/myComponents/MapMoran.tsx";
 import MapPrediction from "@/components/myComponents/MapPrediction.tsx";
+import {geofenceNormalStyle} from "@/common/geofenceStyles.tsx";
+import { moveMapTo } from "@/lib/utils.ts";
+import MapBestZone from "@/components/myComponents/MapBestZone.tsx";
 
 function MapSearch(props: any) {
 
@@ -52,42 +49,6 @@ function MapSearch(props: any) {
     const [layer, setLayer] = useState<VectorLayer<Feature<Geometry>>>();
 
     const [featuresInfo, setFeaturesInfo] = useState<Feature<Geometry>[]>([])
-
-
-    // - stile geofence selezionate
-    const geofenceDeleteStyle = new Style({
-        fill: new Fill({
-            color: 'rgba(255, 99, 71, 0.6)',
-        }),
-        stroke: new Stroke({
-            color: 'rgba(255, 99, 71, 0.8)',
-            width: 2,
-        }),
-    });
-
-    const geofenceNormalStyle = new Style({
-        fill: new Fill({
-            color: 'rgba(255, 255, 255, 0.5)',
-        }),
-        stroke: new Stroke({
-            color: 'rgb(0, 0, 0)',
-            width: 2,
-        }),
-        image: new Icon({
-            anchor: [0.5, 1],
-            src: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLW1hcC1waW4iPjxwYXRoIGQ9Ik0yMCAxMGMwIDYtOCAxMi04IDEycy04LTYtOC0xMmE4IDggMCAwIDEgMTYgMFoiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjEwIiByPSIzIi8+PC9zdmc+'
-        })
-    });
-
-    const geofenceHlightStyle = new Style({
-        fill: new Fill({
-            color: 'rgba(0, 0, 0, 0.6)',
-        }),
-        stroke: new Stroke({
-            color: 'rgb(0, 0, 0)',
-            width: 2,
-        }),
-    });
 
     // - coordinate centro bologna
     const bolognaCenter = {
@@ -127,21 +88,6 @@ function MapSearch(props: any) {
                 mapInstance.setTarget(undefined);
         }
     }, []);
-
-
-    // funzioni movimento sulla mappa
-    function moveMapTo(position: Coordinate, zoom: number) {
-        if (!map)
-            return;
-
-        let point = new Point(fromLonLat(position));
-
-        map.getView().fit(point, {
-            padding: [100, 100, 100, 100],
-            maxZoom: zoom,
-            duration: 1000
-        });
-    }
 
     function circleToPolygon(circle, sides: number) {
         const geometry = circle.getGeometry();
@@ -213,6 +159,8 @@ function MapSearch(props: any) {
                 formData: UserProfile.getServicesPreference(),
             }),
         });
+
+        window.location.href = "/house";
     }
 
     useEffect(() => {
@@ -235,10 +183,10 @@ function MapSearch(props: any) {
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel>
 
-
+            {/* h-fit flex flex-col absolute left-1 top-1/2 transform -translate-y-1/2 z-10 */}
 
                 <Tabs defaultValue="selezione" className="w-full h-full relative">
-                    <TabsList className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-10">
+                    <TabsList className="absolute top-5 left-1/2 transform -translate-x-1/2 z-10">
                         <TabsTrigger value="selezione" onClick={() => {
                             map?.setTarget(undefined)
                             map?.setTarget("map")
@@ -253,6 +201,9 @@ function MapSearch(props: any) {
                         <TabsTrigger value="prediction">
                             Predizione
                         </TabsTrigger>
+                        <TabsTrigger value="bestZone">
+                            Zona Migliore
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="selezione" className="w-full h-full ">
@@ -261,13 +212,16 @@ function MapSearch(props: any) {
                     <TabsContent value="moran" className="w-full h-full ">
                         <MapMoran
                             bolognaCenter={bolognaCenter}
-                            geofenceNormalStyle={geofenceNormalStyle}
                         />
                     </TabsContent>
                     <TabsContent value="prediction" className="w-full h-full ">
                         <MapPrediction
                             bolognaCenter={bolognaCenter}
-                            geofenceNormalStyle={geofenceNormalStyle}
+                        />
+                    </TabsContent>
+                    <TabsContent value="bestZone" className="w-full h-full ">
+                        <MapBestZone
+                            bolognaCenter={bolognaCenter}
                         />
                     </TabsContent>
                 </Tabs>
@@ -277,7 +231,7 @@ function MapSearch(props: any) {
                     variant="outline"
                     size="icon"
                     className="absolute bottom-5 left-5 z-10"
-                    onClick={() => moveMapTo(bolognaCenter.lon_lat, bolognaCenter.zoom)}>
+                    onClick={() => moveMapTo(bolognaCenter.lon_lat, bolognaCenter.zoom, map)}>
                     <LocateFixed className="h-4 w-4" />
                 </Button>
             </ResizablePanel>
@@ -288,8 +242,6 @@ function MapSearch(props: any) {
                 <Card className="mx-4 px-4 py-8">
                     {
                         props.searchType == "zone" && <ZoneSearch
-                            geofenceNormalStyle={geofenceNormalStyle}
-                            geofenceHlightStyle={geofenceHlightStyle}
                             map={map}
                             layer={layer}
                             featuresInfo={featuresInfo}
@@ -299,8 +251,6 @@ function MapSearch(props: any) {
 
                     {
                         props.searchType == "draw" && <GeofenceSearch
-                            geofenceNormalStyle={geofenceNormalStyle}
-                            geofenceDeleteStyle={geofenceDeleteStyle}
                             map={map}
                             layer={layer}
                         />
@@ -308,10 +258,8 @@ function MapSearch(props: any) {
 
                     {
                         props.searchType == "address" && <AddressSearch
-                            geofenceNormalStyle={geofenceNormalStyle}
                             map={map}
                             layer={layer}
-                            moveMapTo={moveMapTo}
                         />
                     }
                 </Card>

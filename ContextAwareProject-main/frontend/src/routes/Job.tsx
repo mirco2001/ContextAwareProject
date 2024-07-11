@@ -38,7 +38,7 @@ interface PoiData {
 
 function WorkerPath() {
 
-    const [map,setMap] = useState(null);
+    const [map, setMap] = useState(null);
     const [points, setPoints] = useState([]);
     const [distance, setDistance] = useState(null);
     const [time, setTime] = useState(null);
@@ -50,7 +50,7 @@ function WorkerPath() {
         lon_lat: fromLonLat([11.3394883, 44.4938134]),
         zoom: 14
     }
-    
+
 
     // creazione della mappa
     useEffect(() => {
@@ -70,7 +70,7 @@ function WorkerPath() {
 
         setMap(mapInstance);
 
-       
+
         return () => {
             if (mapInstance) {
                 mapInstance.setTarget(null);
@@ -78,39 +78,39 @@ function WorkerPath() {
         };
     }, []);
 
-     useEffect(() => {
-        if(!map) return;
+    useEffect(() => {
+        if (!map) return;
 
         map.on("singleclick", (evt) => {
 
-        const coordinates = evt.coordinate;
+            const coordinates = evt.coordinate;
 
-        const convertedCoordinates = transform(coordinates, 'EPSG:3857', 'EPSG:4326');
+            const convertedCoordinates = transform(coordinates, 'EPSG:3857', 'EPSG:4326');
 
-        setPoints((prevPoints) => [...prevPoints, convertedCoordinates]);
+            setPoints((prevPoints) => [...prevPoints, convertedCoordinates]);
 
-        const feature = new Feature({
-            geometry: new Point(coordinates),
-        });
+            const feature = new Feature({
+                geometry: new Point(coordinates),
+            });
 
-        const style = new Style({
-            image: new Icon({
-                src: 'https://openlayers.org/en/latest/examples/data/icon.png',
-                scale: 0.5,
-            }),
-        });
+            const style = new Style({
+                image: new Icon({
+                    src: 'https://openlayers.org/en/latest/examples/data/icon.png',
+                    scale: 0.5,
+                }),
+            });
 
-        feature.setStyle(style);
+            feature.setStyle(style);
 
-        const vectorSource = new VectorSource({
-            features: [feature],
-        });
+            const vectorSource = new VectorSource({
+                features: [feature],
+            });
 
-        const vectorLayer = new VectorLayer({
-            source: vectorSource,
-        });
-        
-        map.addLayer(vectorLayer);
+            const vectorLayer = new VectorLayer({
+                source: vectorSource,
+            });
+
+            map.addLayer(vectorLayer);
 
         })
 
@@ -119,68 +119,70 @@ function WorkerPath() {
 
     function computeRoute() {
 
-        if(points.length <= 1) return;
+        if (points.length <= 1) return;
 
         const url = "https://api.openrouteservice.org/v2/directions/driving-car/geojson"; //specificare se in macchina o altro e implementare la possibilità di resettare la ricerca o cancellare marker ??
         const headers = {
-          'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
-          'Content-Type': 'application/json',
-          'Authorization': '5b3ce3597851110001cf6248162e7ecb62784b71836d89d90e7548bf'
+            'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
+            'Content-Type': 'application/json',
+            'Authorization': '5b3ce3597851110001cf6248162e7ecb62784b71836d89d90e7548bf'
         };
-        
-    
-        const pointsObj = JSON.stringify({ points });
 
+
+        const pointsObj = JSON.stringify({ points });
 
         let jsonObj = JSON.parse(pointsObj);
 
         let coordinates = jsonObj.points;
 
-        const body = JSON.stringify({coordinates});
+        const body = JSON.stringify({ coordinates });
+
+        console.log(body);
         
+
         fetch(url, {
-          method: 'POST',
-          headers: headers,
-          body: body
+            method: 'POST',
+            headers: headers,
+            body: body
         })
-        .then(response => {
-          return response.json();
-        })
-        .then(data => {
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
 
-          data.features.map(i=>{
-            setDistance(i.properties.summary.distance);
-            setTime(i.properties.summary.duration/60);
-          }); 
+                data.features.map(i => {
+                    setDistance(i.properties.summary.distance);
+                    setTime(i.properties.summary.duration / 60);
+                });
 
-          const vectorLayer = new VectorLayer({   
-            source: new VectorSource({
-                features: new GeoJSON().readFeatures(data, {
-                    featureProjection: 'EPSG:3857'
-                })
-            }),
-            style: new Style({
-                stroke: new Stroke({
-                    color: 'blue',
-                    width: 3,
-                }),
-            }),
-        });
+                const vectorLayer = new VectorLayer({
+                    source: new VectorSource({
+                        features: new GeoJSON().readFeatures(data, {
+                            featureProjection: 'EPSG:3857'
+                        })
+                    }),
+                    style: new Style({
+                        stroke: new Stroke({
+                            color: 'blue',
+                            width: 3,
+                        }),
+                    }),
+                });
 
-        map.addLayer(vectorLayer);
-        })
-        .catch(error => {
-          console.error('Error:', error);
-        });
+                map.addLayer(vectorLayer);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
 
     }
 
-  
-    
-        
+
+
+
 
     function centerBologna() {
-        if(map){
+        if (map) {
             let point = new Point(bolognaCenter.lon_lat);
 
 
@@ -215,8 +217,8 @@ function WorkerPath() {
                 <div className="flex flex-row m-1">
                     <Button variant="secondary" className="m-auto"><Heart /></Button>
                     <Button className="m-auto flex-1">Cerca</Button>
-                    <Button onClick={()=>computeRoute()}> Calcola il percorso </Button>
-                    {time &&  distance && (
+                    <Button onClick={() => computeRoute()}> Calcola il percorso </Button>
+                    {time && distance && (
                         <div className="m-1">
                             <p>Durata in minuti: {time.toFixed(2)}</p>
                             <p>Distanza in metri: {distance}</p>
