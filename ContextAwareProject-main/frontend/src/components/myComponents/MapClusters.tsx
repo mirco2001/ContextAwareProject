@@ -59,6 +59,8 @@ function MapClusters(props: any) {
             .then(response => response.json())
             .then(data => {
                 setCluster(data);
+                console.log(data);
+                
             })
             .catch(error => {
                 console.error('Errore nella fetch:', error);

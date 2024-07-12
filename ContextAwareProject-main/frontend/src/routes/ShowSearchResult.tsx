@@ -39,7 +39,6 @@ import { HouseData, LayerInfo } from "@/common/interfaces"
 
 // import stili e icone
 import { LocateFixed, X } from "lucide-react"
-import { disable } from 'ol/rotationconstraint';
 
 let lastFeature: FeatureLike | undefined;
 
@@ -61,13 +60,11 @@ function SearchResult() {
     const info = document.getElementById('info');
     const [selectedHouse, setSelectedHouse] = useState<FeatureLike | undefined>();
 
-    // stato che serve ad impostare quale "pannello laterale" deve essere mostrato
-    // - "true" mostra il pannello della gestione dei POI
-    // - "false" mostra il pannello della gestione dei punti del "Percorso giornaliero" 
-    const [activeLeft, setActiveLeft] = useState(true);
-
     // source del layer per i punti del percorso giornaliero
     const [dailyPointsSource, setDailyPointsSource] = useState<VectorSource<Feature<Geometry>> | null>(new VectorSource());
+
+    let PoiPanel = document.getElementById("PoiPanel")
+    let DailyPathPanel = document.getElementById("DailyPathPanel")
 
     const bolognaCenter = {
         lon_lat: [11.3394883, 44.4938134],
@@ -98,7 +95,6 @@ function SearchResult() {
                 mapInstance.setTarget(undefined);
             }
         };
-
     }, []);
 
     // fetch delle case rispetto al sondaggio dell'utente
@@ -124,6 +120,11 @@ function SearchResult() {
         // controllo che la mappa sia stata definita
         if (!map)
             return;
+
+        if (DailyPathPanel && PoiPanel){
+            PoiPanel.style.display = "block";
+            DailyPathPanel.style.display = "none";
+        }
 
         // controllo che i dati recuperati siano validi
         if (!bestHouseData || bestHouseData.length < 1)
@@ -383,26 +384,34 @@ function SearchResult() {
                             if (info && selectedHouse)
                                 info.style.visibility = 'visible';
 
-                            setActiveLeft(true)
+                            if (!DailyPathPanel || !PoiPanel)
+                                return;
+
+                            PoiPanel.style.display = "block";
+                            DailyPathPanel.style.display = "none";
                         }}>
                             Selezione
                         </TabsTrigger>
 
-                        <TabsTrigger 
+                        <TabsTrigger
                             disabled={selectedHouse == undefined}
-                            
+
                             value="isocrone"
                             onClick={() => {
                                 if (info)
                                     info.style.visibility = 'hidden';
 
-                                setActiveLeft(true)
+                                if (!DailyPathPanel || !PoiPanel)
+                                    return;
+    
+                                PoiPanel.style.display = "block";
+                                DailyPathPanel.style.display = "none";
                             }}>
                             POI Raggiungibili
                         </TabsTrigger>
 
                         <TabsTrigger
-                            
+
                             disabled={selectedHouse == undefined}
 
                             value="Percorso Giornaliero"
@@ -410,7 +419,11 @@ function SearchResult() {
                                 if (info)
                                     info.style.visibility = 'hidden';
 
-                                setActiveLeft(false)
+                                if (!DailyPathPanel || !PoiPanel)
+                                    return;
+    
+                                PoiPanel.style.display = "none";
+                                DailyPathPanel.style.display = "block";
                             }}>
                             Percorso Giornaliero
                         </TabsTrigger>
@@ -490,17 +503,23 @@ function SearchResult() {
             <ResizableHandle />
 
             <ResizablePanel minSize={10} maxSize={20} className="flex flex-col justify-around px-6">
-                {
-                    activeLeft
-                        ? (<PoiToggleList
-                            map={map}
-                            setPoiLayers={setPoiLayers}
-                        />)
-                        : (<ControlsDailyPath
-                            dailyPointsSource={dailyPointsSource}
-                            setDailyPointsSource={setDailyPointsSource}
-                        />)
-                }
+                <div 
+                    id='PoiPanel'
+                    className='h-full flex'>
+                    <PoiToggleList
+                        map={map}
+                        setPoiLayers={setPoiLayers}
+                    />
+                </div>
+
+                <div 
+                    id='DailyPathPanel'
+                    className='h-full flex'>
+                    <ControlsDailyPath
+                        dailyPointsSource={dailyPointsSource}
+                        setDailyPointsSource={setDailyPointsSource}
+                    />
+                </div>
             </ResizablePanel>
 
         </ResizablePanelGroup >

@@ -281,7 +281,7 @@ function ControlsDailyPath(props: any) {
 
 
     return (
-        <div className="h-full justify-between flex flex-col">
+        <div className="justify-between flex flex-col h-full">
 
             <div className="flex flex-col flex-none">
                 <p className="m-3 text-center font-medium leading-none">Inserisci l'indirizzo a cui sei interessato</p>
