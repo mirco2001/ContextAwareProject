@@ -12,6 +12,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
+
 function Root() {
 
     return (
@@ -34,7 +35,6 @@ function Root() {
                         <DropdownMenuContent>
                             <DropdownMenuLabel>My Account</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>Case Preferite</DropdownMenuItem>
                             <DropdownMenuItem><Link to='form'>Preferenze Servizi</Link> </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>

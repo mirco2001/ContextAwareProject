@@ -9,7 +9,6 @@ import {
     SelectContent,
     SelectGroup,
     SelectItem,
-    SelectLabel,
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
@@ -17,6 +16,7 @@ import {
 import { LocateFixed } from "lucide-react"
 
 import { Map as MapOl, View, Overlay } from 'ol';
+import StadiaMaps from 'ol/source/StadiaMaps.js';
 import { fromLonLat } from "ol/proj"
 import { Point } from "ol/geom"
 import { useEffect, useState, useRef } from "react"

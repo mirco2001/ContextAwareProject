@@ -10,6 +10,7 @@ import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import { Fill, Icon, RegularShape, Stroke, Style } from "ol/style"
 import { FeatureLike } from "ol/Feature";
+import StadiaMaps from 'ol/source/StadiaMaps.js';
 
 // import libreria react
 import { useEffect, useState } from "react"
@@ -26,6 +27,14 @@ import {
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
 // import componenti miei
 import PoiToggleList from "@/components/myComponents/PoiToggleList"
@@ -38,7 +47,7 @@ import { getColor, moveMapTo } from "@/lib/utils";
 import { HouseData, LayerInfo } from "@/common/interfaces"
 
 // import stili e icone
-import { LocateFixed, X } from "lucide-react"
+import { LocateFixed, X, Map } from "lucide-react"
 
 let lastFeature: FeatureLike | undefined;
 
@@ -71,22 +80,24 @@ function SearchResult() {
         zoom: 14
     }
 
+    const [actualLayer,setActualLayer] = useState(new TileLayer({
+        preload: Infinity,
+        source: new OSM()
+    }));
+
     // creazione della mappa
     // (attivata all'avvio del componente)
     useEffect(() => {
-        const osmLayer = new TileLayer({
-            preload: Infinity,
-            source: new OSM(),
-        });
-
         const mapInstance = new MapOl({
             target: "map",
-            layers: [osmLayer],
+            layers: [actualLayer],
             view: new View({
                 center: fromLonLat(bolognaCenter.lon_lat),
                 zoom: bolognaCenter.zoom,
             }),
         });
+
+
 
         setMap(mapInstance);
 
@@ -366,6 +377,20 @@ function SearchResult() {
             divScore.style.backgroundColor = lastFeature.get("color");
     }
 
+    function handleSelectChange(value){
+        if(value == "stamen"){
+            actualLayer.setSource(
+                new StadiaMaps({
+                    layer: 'stamen_terrain',
+                })
+            );
+
+        } else if(value == "osm"){
+            actualLayer.setSource(new OSM());
+        }
+        
+    }
+
     return (
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel>
@@ -434,6 +459,17 @@ function SearchResult() {
                         <div style={{ height: '100%', width: '100%' }}
                             id="map"
                             className="map-container relative">
+                            <Select onValueChange={(value: String) => handleSelectChange(value)} >
+                                <SelectTrigger className="absolute top-0 right-0 z-10 w-[10vh]">
+                                    <Map></Map>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="osm">OpenStreetMap</SelectItem>
+                                        <SelectItem value="stamen">Stamen</SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
 
                         </div>
                     </TabsContent>

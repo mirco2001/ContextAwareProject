@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Feature, Map as MapOl, View } from 'ol';
 import { fromLonLat } from 'ol/proj';
 import GeoJSON from 'ol/format/GeoJSON.js';
+import StadiaMaps from 'ol/source/StadiaMaps.js';
 
 // import componenti shadecn
 import { Button } from "@/components/ui/button"
@@ -16,9 +17,16 @@ import {
     Card,
 } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+    Select,
+    SelectContent,
+    SelectGroup,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select"
 
-
-import { LocateFixed, Heart } from "lucide-react";
+import { LocateFixed, Heart, Map } from "lucide-react";
 
 import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 
@@ -56,18 +64,18 @@ function MapSearch(props: any) {
         lon_lat: [11.3394883, 44.4938134],
         zoom: 14
     }
-    // ===================================
+
+    const [actualLayer,setActualLayer] = useState(new TileLayer({
+        preload: Infinity,
+        source: new OSM()
+    }));
 
     // creazione della mappa
     useEffect(() => {
-        const osmLayer = new TileLayer({
-            preload: Infinity,
-            source: new OSM(),
-        });
 
         const mapInstance = new MapOl({
             target: "map",
-            layers: [osmLayer],
+            layers: [actualLayer],
             view: new View({
                 center: fromLonLat(bolognaCenter.lon_lat),
                 zoom: bolognaCenter.zoom,
@@ -179,6 +187,20 @@ function MapSearch(props: any) {
     }, [map, layer]);
 
 
+    function handleSelectChange(value){
+        if(value == "stamen"){
+            actualLayer.setSource(
+                new StadiaMaps({
+                    layer: 'stamen_terrain',
+                })
+            );
+
+        } else if(value == "osm"){
+            actualLayer.setSource(new OSM());
+        }
+        
+    }
+
     return (
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel>
@@ -210,7 +232,19 @@ function MapSearch(props: any) {
                     </TabsList>
 
                     <TabsContent value="selezione" className="w-full h-full ">
-                        <div style={{ height: '100%', width: '100%' }} id="map" className="map-container" />
+                        <div style={{ height: '100%', width: '100%' }} id="map" className="map-container">
+                            <Select onValueChange={(value: String) => handleSelectChange(value)} >
+                                <SelectTrigger className="absolute top-0 right-0 z-10 w-[10vh]">
+                                    <Map></Map>
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="osm">OpenStreetMap</SelectItem>
+                                        <SelectItem value="stamen">Stamen</SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                         </div>
                     </TabsContent>
                     <TabsContent value="moran" className="w-full h-full ">
                         <MapMoran
