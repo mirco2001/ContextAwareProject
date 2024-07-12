@@ -64,16 +64,13 @@ function AddressSearch(props: any) {
 
         return addresses.features.map((address, index: number) => (
             <CommandItem
-                className="pointer-events: auto"
-                key={"address" + index}
-                onClick={() => {
+                key={"address" + index} 
+            >
+                <div className="w-full flex justify-start flex-row content-center"  onClick={() => {
                     let addressLonLat: Coordinate = [address.properties.lon, address.properties.lat];
                     setChosenAddress(addressLonLat);
                     moveMapTo(addressLonLat, 14, props.map);
-                }}
-                style={{ cursor: "pointer" }}
-            >
-                <div className="w-full flex justify-start flex-row content-center">
+                }}>
                     <Building2 className="my-auto mr-2" />
                     <div>
                         <p> {address.properties.address_line1} </p>

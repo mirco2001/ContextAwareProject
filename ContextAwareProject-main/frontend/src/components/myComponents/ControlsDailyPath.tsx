@@ -250,14 +250,11 @@ function ControlsDailyPath(props: any) {
 
         // per ogni indirizzo ritrovato genero un "item"
         return addresses.features.map((addres, index: number) =>
-            <>
-
                 <CommandItem key={"address" + index}>
                     <div className="w-full flex justify-start flex-row content-center"
                         onClick={() => {
 
                             let addressLonLat: Coordinate = [addres.properties.lon, addres.properties.lat];
-                            console.log(addressLonLat);
 
                             var oFeature = new Feature({
                                 geometry: new Point(
@@ -278,7 +275,6 @@ function ControlsDailyPath(props: any) {
                         </div>
                     </div>
                 </CommandItem>
-            </>
         )
     }
 
