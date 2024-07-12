@@ -26,9 +26,16 @@ import {
 } from "@/components/ui/command"
 import { Separator } from "@/components/ui/separator"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+    ContextMenu,
+    ContextMenuContent,
+    ContextMenuItem,
+    ContextMenuTrigger,
+} from "@/components/ui/context-menu"
+
 
 // import stili e icone
-import { Trash2, ChevronUp, ChevronDown, Building2 } from "lucide-react"
+import { Trash2, ChevronUp, ChevronDown, Building2, MapPin, EllipsisVertical } from "lucide-react"
 import { Coordinate } from "ol/coordinate";
 import { fromLonLat } from "ol/proj";
 import { Point } from "ol/geom";
@@ -103,46 +110,50 @@ function ControlsDailyPath(props: any) {
     // - visualizzare origine feature 
     function createList(features: Feature[] | undefined) {
         return features?.map((feature, index: number) =>
-            <Card
-                className="px-4 py-2 my-2 flex justify-between"
-                key={index}>
 
-                <div className="inline-block align-baseline">
-                    <span className="text-xl text-muted-foreground mr-2">
-                        {index + 1}
-                    </span>
+            <ContextMenu key={index}>
+                <ContextMenuTrigger>
+                    <Card
+                        className="px-4 py-2 my-2 flex justify-between"
+                    >
 
-                    <span className="">
-                        {feature.get("name")}
-                    </span>
-                </div>
+                        <div className="flex w-full justify-between content-center">
+                            <MapPin className="mr-2" />
+                            <span className="flex flex-row">
+                                {feature.get("name")}
+                            </span>
 
-                <div className="space-x-1">
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="hover:animate-bounce"
-                        onClick={() => moveFeature(feature, false)}>
+                            <div className="flex flex-row">
+                                <span className="text-xl text-muted-foreground mr-2">
+                                    {index + 1}
+                                </span>
+                                <EllipsisVertical className="m-auto" />
+                            </div>
+                        </div>
+                    </Card>
+                </ContextMenuTrigger>
+                <ContextMenuContent>
+                    <ContextMenuItem
+                        onClick={() => moveFeature(feature, false)}
+                        className="justify-between"
+                    >
+                        <span>Porta Su</span>
                         <ChevronUp className="h-4 w-4" />
-                    </Button>
-
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="hover:animate-bounce"
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                        className="justify-between"
                         onClick={() => moveFeature(feature, true)}>
+                        <span>Porta Giù</span>
                         <ChevronDown className="h-4 w-4" />
-                    </Button>
-
-                    <Button
-                        variant="destructive"
-                        size="icon"
+                    </ContextMenuItem>
+                    <ContextMenuItem
+                        className="justify-between bg-[#7F1D1D]"
                         onClick={() => removeFeature(feature)}>
-
+                        <span>Rimuovi</span>
                         <Trash2 className="h-4 w-4" />
-                    </Button>
-                </div>
-            </Card>
+                    </ContextMenuItem>
+                </ContextMenuContent>
+            </ContextMenu >
         );
 
     }
@@ -235,32 +246,35 @@ function ControlsDailyPath(props: any) {
 
         // per ogni indirizzo ritrovato genero un "item"
         return addresses.features.map((addres, index: number) =>
-            <CommandItem key={"address" + index}>
-                <div className="w-full flex justify-start flex-row content-center"
-                    onClick={() => {
+            <>
 
-                        let addressLonLat: Coordinate = [addres.properties.lon, addres.properties.lat];
-                        console.log(addressLonLat);
+                <CommandItem key={"address" + index}>
+                    <div className="w-full flex justify-start flex-row content-center"
+                        onClick={() => {
 
-                        var oFeature = new Feature({
-                            geometry: new Point(
-                                fromLonLat(addressLonLat)
-                            )
-                        });
+                            let addressLonLat: Coordinate = [addres.properties.lon, addres.properties.lat];
+                            console.log(addressLonLat);
 
-                        let actualFeatureNumber = props.dailyPointsSource.getFeatures().length + 1;
+                            var oFeature = new Feature({
+                                geometry: new Point(
+                                    fromLonLat(addressLonLat)
+                                )
+                            });
 
-                        oFeature.setStyle(createDailyPointStyle(actualFeatureNumber));
-                        oFeature.set("name", addres.properties.address_line1)
-                        props.dailyPointsSource.addFeature(oFeature);
-                    }}>
-                    <Building2 className="my-auto mr-2" />
-                    <div>
-                        <p> {addres.properties.address_line1} </p>
-                        <p className="text-sm text-muted-foreground"> {addres.properties.address_line2} </p>
+                            let actualFeatureNumber = props.dailyPointsSource.getFeatures().length + 1;
+
+                            oFeature.setStyle(createDailyPointStyle(actualFeatureNumber));
+                            oFeature.set("name", addres.properties.address_line1)
+                            props.dailyPointsSource.addFeature(oFeature);
+                        }}>
+                        <Building2 className="my-auto mr-2" />
+                        <div>
+                            <p> {addres.properties.address_line1} </p>
+                            <p className="text-sm text-muted-foreground"> {addres.properties.address_line2} </p>
+                        </div>
                     </div>
-                </div>
-            </CommandItem>
+                </CommandItem>
+            </>
         )
     }
 
@@ -269,19 +283,16 @@ function ControlsDailyPath(props: any) {
     return (
         <div className="h-full justify-between flex flex-col">
 
-            <div>
+            <div className="flex flex-col flex-none">
                 <p className="m-3 text-center font-medium leading-none">Inserisci l'indirizzo a cui sei interessato</p>
                 <div className="rounded-lg border mb-8">
-                    <Command className="h-10">
+                    <Command shouldFilter={false}>
                         <CommandInput placeholder="Indirizzo..." onInput={(e) =>
                             geocodingApiRequest(e.currentTarget.value)
                         } />
-                        <CommandList></CommandList>
-                    </Command>
-                    <Separator className="" />
-                    <Command>
+                        <Separator className="" />
                         <CommandList>
-                            <ScrollArea className="h-[300px] p-2">
+                            <ScrollArea className="h-[120px] p-2 3xl:h-[250px]">
                                 <CommandEmpty>Nessun risultato trovato.</CommandEmpty>
                                 <CommandGroup heading="Suggestions">
                                     {generateSuggestions(retrivenAddresses)}
@@ -292,19 +303,16 @@ function ControlsDailyPath(props: any) {
                 </div>
             </div>
 
-
-
             <Card className="flex flex-col flex-1 p-4 mb-6 justify-between">
 
-                <div>
-                    <CardHeader>
-                        <CardTitle>Punti Giornalieri</CardTitle>
-                        <CardDescription>Le posizioni che visiti tutti i giorni</CardDescription>
-                    </CardHeader>
+                <div className="flex flex-none flex-col">
+                    <CardTitle>Punti Giornalieri</CardTitle>
+                    <CardDescription>Le posizioni che visiti tutti i giorni</CardDescription>
                 </div>
 
 
-                <ScrollArea className="h-[40vh]">
+                <ScrollArea
+                    className="flex h-[34vh]">
                     {createList(features)}
                 </ScrollArea>
 
@@ -314,6 +322,7 @@ function ControlsDailyPath(props: any) {
 
                     Resetta Punti
                 </Button>
+
             </Card>
         </div>
     );
