@@ -286,9 +286,9 @@ function PoiToggleList(props: any) {
 
 
     return (
-        <div className="h-full flex flex-col justify-around">
+        <div className="flex flex-col flex-1 justify-around">
             <p className="m-3 text-center font-medium leading-none">Quali punti di interesse vuoi visualizzare?</p>
-            <ScrollArea className="h-[75vh] rounded-md border p-4">
+            <ScrollArea className="h-[70vh] rounded-md border p-4">
                 <Accordion type="multiple">
                     <AccordionItem value="item-1">
                         <AccordionTrigger>Educazione e Relax</AccordionTrigger>

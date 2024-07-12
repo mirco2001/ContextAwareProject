@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 
 // import icone e stili
 import "./HomePage.css"
-import { Map, MapPin, Pencil, Heart } from "lucide-react";
+import { Map, MapPin, Pencil, Heart, PencilRuler } from "lucide-react";
 
 // import componenti react
 import { Link } from "react-router-dom";
@@ -52,10 +52,15 @@ function HomePage() {
 
                     </CardContent>
 
-                    <CardFooter>
+                    <CardFooter className="flex flex-col">
                         <Link className="flex items-center space-x-2 mx-auto" to={'/form'}>
                             <Button variant="link" className="text-wrap">
                                 <Heart className="mx-1 lg:mr-2 lg:h-4 lg:w-4" /> Per una ricerca accurata Specifica le tue Preferenze
+                            </Button>
+                        </Link>
+                        <Link className="flex items-center space-x-2 mx-auto" to={'/edit'}>
+                            <Button variant="link" className="text-wrap">
+                                <PencilRuler className="mx-1 lg:mr-2 lg:h-4 lg:w-4" /> Modifica i Punti di Interesse se sei a Conoscenza di Cambiamenti
                             </Button>
                         </Link>
                     </CardFooter>

@@ -130,9 +130,12 @@ function ControlsDailyPath(props: any) {
                                 <EllipsisVertical className="m-auto" />
                             </div>
                         </div>
+
+
                     </Card>
                 </ContextMenuTrigger>
                 <ContextMenuContent>
+
                     <ContextMenuItem
                         onClick={() => moveFeature(feature, false)}
                         className="justify-between"
@@ -152,6 +155,7 @@ function ControlsDailyPath(props: any) {
                         <span>Rimuovi</span>
                         <Trash2 className="h-4 w-4" />
                     </ContextMenuItem>
+                    
                 </ContextMenuContent>
             </ContextMenu >
         );

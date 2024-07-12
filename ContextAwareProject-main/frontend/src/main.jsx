@@ -20,7 +20,6 @@ import ErrorPage from './ErrorPage';
 import MapSearch from "./routes/MapSearch"
 import RadioGroupForm from "./routes/form"
 import SearchResult from "./routes/ShowSearchResult"
-import Cluster from "./routes/Cluster.tsx"
 import Edit from "./routes/Edit.tsx"
 
 import 'ol/ol.css';
@@ -58,10 +57,6 @@ const router = createBrowserRouter([
       {
         path: "form",
         element: <RadioGroupForm />
-      },
-      {
-        path: "cluster",
-        element: <Cluster />
       },
       {
         path: "edit",

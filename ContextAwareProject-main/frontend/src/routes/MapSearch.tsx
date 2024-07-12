@@ -36,9 +36,10 @@ import ZoneSearch from "@/components/myComponents/ZoneSearch.tsx";
 import GeofenceSearch from "@/components/myComponents/GeofenceSearch.tsx";
 import MapMoran from "@/components/myComponents/MapMoran.tsx";
 import MapPrediction from "@/components/myComponents/MapPrediction.tsx";
-import {geofenceNormalStyle} from "@/common/geofenceStyles.tsx";
+import { geofenceNormalStyle } from "@/common/geofenceStyles.tsx";
 import { moveMapTo } from "@/lib/utils.ts";
 import MapBestZone from "@/components/myComponents/MapBestZone.tsx";
+import MapClusters from "@/components/myComponents/MapClusters.tsx";
 
 function MapSearch(props: any) {
 
@@ -182,7 +183,7 @@ function MapSearch(props: any) {
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel>
 
-            {/* h-fit flex flex-col absolute left-1 top-1/2 transform -translate-y-1/2 z-10 */}
+                {/* h-fit flex flex-col absolute left-1 top-1/2 transform -translate-y-1/2 z-10 */}
 
                 <Tabs defaultValue="selezione" className="w-full h-full relative">
                     <TabsList className="absolute top-5 left-1/2 transform -translate-x-1/2 z-10">
@@ -203,6 +204,9 @@ function MapSearch(props: any) {
                         <TabsTrigger value="bestZone">
                             Zona Migliore
                         </TabsTrigger>
+                        <TabsTrigger value="clusters">
+                            Cluster
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="selezione" className="w-full h-full ">
@@ -220,6 +224,11 @@ function MapSearch(props: any) {
                     </TabsContent>
                     <TabsContent value="bestZone" className="w-full h-full ">
                         <MapBestZone
+                            bolognaCenter={bolognaCenter}
+                        />
+                    </TabsContent>
+                    <TabsContent value="clusters" className="w-full h-full ">
+                        <MapClusters
                             bolognaCenter={bolognaCenter}
                         />
                     </TabsContent>

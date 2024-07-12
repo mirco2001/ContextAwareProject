@@ -12,14 +12,14 @@ import {
     SelectLabel,
     SelectTrigger,
     SelectValue,
-  } from "@/components/ui/select"
+} from "@/components/ui/select"
 
 import { LocateFixed } from "lucide-react"
 
 import { Map as MapOl, View, Overlay } from 'ol';
 import { fromLonLat } from "ol/proj"
 import { Point } from "ol/geom"
-import { useEffect, useState,useRef } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Coordinate } from "ol/coordinate"
 import TileLayer from "ol/layer/Tile"
 import { OSM } from "ol/source"
@@ -30,7 +30,7 @@ import VectorSource from 'ol/source/Vector';
 import { Fill, Icon, RegularShape, Style, Stroke, Circle as CircleStyle } from "ol/style"
 import PoiToggleList from "@/components/myComponents/PoiToggleList"
 import { Link } from "react-router-dom";
-import { toLonLat } from 'ol/proj';  
+import { toLonLat } from 'ol/proj';
 import {
     Dialog,
     DialogContent,
@@ -38,29 +38,29 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-  } from "@/components/ui/dialog"
-  
+} from "@/components/ui/dialog"
 
-  const POIs = [
+
+const POIs = [
     {
-      value: "Supermercati",
-      label: "Supermercato",
+        value: "Supermercati",
+        label: "Supermercato",
     },
     {
-      value: "Banche",
-      label: "Banca",
+        value: "Banche",
+        label: "Banca",
     },
     {
-      value: "Biblioteche",
-      label: "Biblioteca",
+        value: "Biblioteche",
+        label: "Biblioteca",
     },
     {
-      value: "Cinema",
-      label: "Cinema",
+        value: "Cinema",
+        label: "Cinema",
     },
     {
-      value: "Colonnine",
-      label: "Colonnina",
+        value: "Colonnine",
+        label: "Colonnina",
     },
     {
         value: "Dopo Scuola",
@@ -118,7 +118,7 @@ import {
         value: "Fermate Bus",
         label: "Fermata Bus",
     },
-  ]
+]
 
 
 function Edit() {
@@ -162,7 +162,7 @@ function Edit() {
         setFeatureDel(null);
 
 
-        mapInstance.on('click', function(event) {
+        mapInstance.on('click', function (event) {
             const feature = mapInstance.forEachFeatureAtPixel(event.pixel, (feature) => {
                 setFeatureDel(feature);
                 setOpen(true);
@@ -176,7 +176,7 @@ function Edit() {
                 return true;
             });
 
-            if(!feature){
+            if (!feature) {
                 setLastClickCoordinate(event.coordinate);
                 setOpen(false);
                 setOpen2(true);
@@ -187,7 +187,7 @@ function Edit() {
                     name: ''
                 })
             }
-                
+
         });
 
         return () => {
@@ -219,7 +219,7 @@ function Edit() {
     function del(actualPOI) {
         setDeletedList([...deletedList, actualPOI]);
         setOpen(false);
-        if(featureDel){
+        if (featureDel) {
             const style = [
                 new Style({
                     image: new RegularShape({
@@ -246,11 +246,11 @@ function Edit() {
 
             const [lon, lat] = toLonLat(lastClickCoordinate);
 
-            console.log(lon,lat);
+            console.log(lon, lat);
 
             const newEntry = {
-              name: selectedValue,
-              coordinates: { lon, lat },
+                name: selectedValue,
+                coordinates: { lon, lat },
             };
 
             setAddList([...addList, newEntry]);
@@ -278,7 +278,7 @@ function Edit() {
                 })
             ];
 
-            
+
             marker.setStyle(style);
 
             const vectorSource = new VectorSource();
@@ -291,11 +291,11 @@ function Edit() {
         }
     }
 
-    function handleSelectChange(value){
+    function handleSelectChange(value) {
         setSelectedValue(value);
     }
 
-    function apply(addList,deletedList){
+    function apply(addList, deletedList) {
         console.log(addList);
         console.log(deletedList);
 
@@ -315,7 +315,7 @@ function Edit() {
     return (
         <ResizablePanelGroup direction="horizontal">
             <ResizablePanel>
-                <div style={{ height: '100%', width: '100%' }} id="map" className="map-container"/>
+                <div style={{ height: '100%', width: '100%' }} id="map" className="map-container" />
                 <Button
                     variant="outline"
                     size="icon"
@@ -327,11 +327,14 @@ function Edit() {
 
             <ResizableHandle />
 
-            <ResizablePanel minSize={10} maxSize={20} className="flex flex-col justify-around px-6">
+            <ResizablePanel minSize={10} maxSize={20} className="flex flex-col justify-around px-6 pb-4">
                 <PoiToggleList map={map} />
-                <Link to={'/home'}>
+                <Link
+                    className="flex-none"
+                    to={'/home'}>
                     <Button
-                        className="bg-green-500 hover:bg-green-700 w-full"
+                        className="bg-[#307351] hover:bg-[#285f43] w-full"
+                        variant={"destructive"}
                         onClick={() => apply(addList, deletedList)}
                     >
                         Applica Modifiche
@@ -339,59 +342,70 @@ function Edit() {
                 </Link>
             </ResizablePanel>
 
-           {open && (
+            {open && (
                 <Dialog open={open} onOpenChange={setOpen}>
                     <DialogTrigger asChild>
-                    <button style={{ display: 'none' }}>Trigger</button>
+                        <button style={{ display: 'none' }}>Trigger</button>
                     </DialogTrigger>
                     <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Vuoi eliminare questo Punto di interesse?</DialogTitle>
-                        <DialogDescription>
-                            {actualPOI.name}
-                        </DialogDescription>
-                        <DialogDescription>
-                            <Button variant="destructive" onClick={() => del(actualPOI)}>
-                                Elimina
-                            </Button>
-                        </DialogDescription>
-                    </DialogHeader>
-                    </DialogContent>
-                </Dialog>
-           )}
-            
-            {open2 &&
-             (
-                <Dialog open={open2} onOpenChange={setOpen2}>
-                    <DialogTrigger asChild>
-                    <button style={{ display: 'none' }}>Trigger</button>
-                    </DialogTrigger>
-                    <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Vuoi aggiungere un Punto di interesse?</DialogTitle>
-                           <Select onValueChange={(value: String) => handleSelectChange(value)}>
-                            <SelectTrigger className="w-[280px]">
-                                <SelectValue 
-                                    placeholder="Seleziona un tipo di PoI..." 
-                                />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    {POIs.map((poi) => (
-                                        <SelectItem value={poi.value} key={poi.value}>{poi.label}</SelectItem>
-                                    ))}
-                                </SelectGroup>
-                            </SelectContent>
-                            </Select>
-                            <DialogDescription>
-                                <Button variant="destructive" onClick={() => add(selectedValue)}>
-                                    Aggiungi
-                                </Button>
+                        <DialogHeader>
+                            <DialogTitle>Vuoi eliminare questo Punto di interesse?</DialogTitle>
+
+                            <DialogDescription className="py-2">
+                                <span>Il punto selezionato è della categoria </span>
+                                <span className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold">{actualPOI.name}</span>
                             </DialogDescription>
                         </DialogHeader>
+
+                        <Button variant="destructive" onClick={() => del(actualPOI)}>
+                            Elimina
+                        </Button>
                     </DialogContent>
                 </Dialog>
-           )}
+            )}
+
+            {open2 &&
+                (
+                    <Dialog open={open2} onOpenChange={setOpen2}>
+                        <DialogTrigger asChild>
+                            <button style={{ display: 'none' }}>Trigger</button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Vuoi aggiungere un Punto di interesse?</DialogTitle>
+
+                                <DialogDescription>
+
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <div className="flex flex-row w-full justify-between space-x-4">
+
+                                <Select onValueChange={(value: String) => handleSelectChange(value)}>
+                                    <SelectTrigger className="flex-1">
+                                        <SelectValue
+                                            placeholder="Seleziona un tipo di PoI..."
+                                        />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectGroup>
+                                            {POIs.map((poi) => (
+                                                <SelectItem value={poi.value} key={poi.value}>{poi.label}</SelectItem>
+                                            ))}
+                                        </SelectGroup>
+                                    </SelectContent>
+                                </Select>
+
+                                <Button
+                                    className="flex-none bg-[#307351] hover:bg-[#285f43]"
+                                    variant="destructive" onClick={() => add(selectedValue)}>
+                                    Aggiungi
+                                </Button>
+
+                            </div>
+                        </DialogContent>
+                    </Dialog>
+                )}
 
         </ResizablePanelGroup>
     )
