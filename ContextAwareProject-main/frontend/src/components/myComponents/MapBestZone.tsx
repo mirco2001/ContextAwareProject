@@ -186,6 +186,8 @@ function MapBestZone(props: any) {
         if (!mapBestZone)
             return;
 
+        info.style.visibility = 'hidden';
+
         mapBestZone.on('pointermove', function (evt) {
             if (!info)
                 return;

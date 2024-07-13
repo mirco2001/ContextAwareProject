@@ -281,6 +281,8 @@ function MapPrediction(props: any) {
         if (!mapPrediction)
             return;
 
+        info.style.visibility = 'hidden';
+
         // a ogni movimento del mouse
         mapPrediction.on('pointermove', function (evt) {
             if (!info)

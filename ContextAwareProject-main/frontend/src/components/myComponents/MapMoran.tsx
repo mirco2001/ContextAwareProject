@@ -143,6 +143,8 @@ function MapMoran(props: any) {
         if (!mapMoran)
             return;
 
+        info.style.visibility = 'hidden';
+
         mapMoran.on('pointermove', function (evt) {
             if (!info)
                 return;
