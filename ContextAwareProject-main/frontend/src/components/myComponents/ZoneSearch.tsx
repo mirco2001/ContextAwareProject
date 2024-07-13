@@ -27,6 +27,7 @@ import SelectedZoneList from "./SelectedZoneList";
 // stili e icone
 import { Trash } from "lucide-react";
 import {geofenceHlightStyle, geofenceNormalStyle} from "@/common/geofenceStyles";
+import { ZoneData } from "@/common/interfaces";
 
 
 function ZoneSearch(props: any) {
@@ -97,7 +98,7 @@ function ZoneSearch(props: any) {
         vSource.clear();
 
         // - per ogni zona che è stata "recuperata"
-        zonesData.forEach(element => {
+        zonesData.forEach((element:ZoneData) => {
 
             // prendo la geometria, 
             // creo una feature con essa,
@@ -158,7 +159,7 @@ function ZoneSearch(props: any) {
         var dblClickInteraction: Interaction = new Interaction();
 
         // find DoubleClickZoom interaction
-        props.map.getInteractions().getArray().forEach(function (interaction) {
+        props.map.getInteractions().getArray().forEach(function (interaction: Interaction) {
             if (interaction instanceof DoubleClickZoom) {
                 dblClickInteraction = interaction;
             }

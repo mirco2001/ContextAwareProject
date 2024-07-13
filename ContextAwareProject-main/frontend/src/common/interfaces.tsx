@@ -36,6 +36,11 @@ export interface zoneWithScore {
     punteggio: string
 }
 
+export interface ZoneData {
+    wkb_geometry:string,
+    nomezona:string
+}
+
 export interface AddPoI{
     name: string;
     coordinates: {
@@ -63,4 +68,15 @@ export interface MoranData {
         value: number;
         value_local_moran_p_sim: number;
     };
+}
+
+export interface PredictionDataBack{
+    Luogo: string,
+    Data: string,
+    ["Prezzo previsto"]: number
+}
+
+export interface predictionData {
+    date: string;
+    price: number;
 }

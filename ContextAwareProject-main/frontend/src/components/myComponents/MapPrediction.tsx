@@ -25,11 +25,7 @@ import { LineChart } from '@mui/x-charts/LineChart';
 
 import { getColor } from "@/lib/utils";
 import { attributions, key } from '@/common/keys';
-
-interface predictionData {
-    date: string;
-    price: number;
-}
+import { predictionData, PredictionDataBack, ZoneData } from '@/common/interfaces';
 
 let yearMin: Map<string, number>, yearMax: Map<string, number>;
 
@@ -37,10 +33,10 @@ function MapPrediction(props: any) {
 
     // === DICHIARAZIONE DEGLLE VARIABILI STATE ===
     // - per la gestione della mappa e dei suoi layer
-    const [tileLayer, setTilelayer] = useState<TileLayer<any>>();    
+    const [tileLayer, setTilelayer] = useState<TileLayer<any>>();
     const [mapPrediction, setMapPrediction] = useState<MapOl>();
     const OSM_source = useRef(new OSM());
-    const aerial_source  = useRef(new XYZ({
+    const aerial_source = useRef(new XYZ({
         attributions: attributions,
         url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=' + key,
         tileSize: 512,
@@ -144,7 +140,7 @@ function MapPrediction(props: any) {
                 // - "Data" data della predizione
                 // - "Prezzo previsto" il prezzo che si prevede avere nella zona indicata
 
-                parsedData.forEach(element => {
+                parsedData.forEach((element: PredictionDataBack) => {
                     if (element.Data == "2025-01-01")
                         return;
 
@@ -166,11 +162,14 @@ function MapPrediction(props: any) {
                         yearMax.set(element.Data, element["Prezzo previsto"])
                     }
 
+                    let actualYearMax = yearMax.get(element.Data);
+                    let actualYearMin = yearMin.get(element.Data);
+
                     // se il prezzo predetto e il minimo o il massimo per una determinata data me lo segno
-                    if (yearMax.get(element.Data) < element["Prezzo previsto"])
+                    if (actualYearMax && actualYearMax < element["Prezzo previsto"])
                         yearMax.set(element.Data, element["Prezzo previsto"])
 
-                    if (yearMin.get(element.Data) > element["Prezzo previsto"])
+                    if (actualYearMin && actualYearMin > element["Prezzo previsto"])
                         yearMin.set(element.Data, element["Prezzo previsto"])
 
 
@@ -200,7 +199,10 @@ function MapPrediction(props: any) {
             .then(response => response.json())
             .then(data => {
 
-                setZonesData(data)
+                setZonesData(data.rows)
+
+                console.log(data.rows);
+
 
             })
             .catch(error => {
@@ -214,7 +216,7 @@ function MapPrediction(props: any) {
         // - la mappa sia definita
         // - siano stati recuperati dei dati di predizione
         // - siano state recuperate le zone
-        if (!mapPrediction || !zonesData.rows || !zonePrediction)
+        if (!mapPrediction || !zonesData || !zonePrediction)
             return;
 
         // controllo di non aver già aggiunto dei layer alla mappa
@@ -228,7 +230,7 @@ function MapPrediction(props: any) {
         const format = new WKB();
 
         // per ogni riga
-        zonesData.rows.forEach(element => {
+        zonesData.forEach((element: ZoneData) => {
 
             // prendo la geometria, 
             // creo una feature con essa,
@@ -277,7 +279,7 @@ function MapPrediction(props: any) {
     // con le informazioni sulle feature evidenziate
     useEffect(() => {
         // se la mappa è stata caricata
-        if (!mapPrediction)
+        if (!mapPrediction || !info)
             return;
 
         info.style.visibility = 'hidden';
@@ -304,7 +306,7 @@ function MapPrediction(props: any) {
     }, [mapPrediction]);
 
     // funzione per caricare le informazioni su una feature nel pop-up
-    const displayFeatureInfo = function (pixel: Pixel, target) {
+    const displayFeatureInfo = function (pixel: Pixel, target: { closest: (arg0: string) => any; }) {
         // contollo che mappa e pop-up siano caricati
         if (!info || !mapPrediction)
             return;
@@ -482,12 +484,16 @@ function MapPrediction(props: any) {
 
         let predYear: number = predictionDates.indexOf(date);
 
-        let yearPrediction = zonePrediction.get(getPredictionName(zoneName))[predYear];
+        let nameOfPrediction = getPredictionName(zoneName);
 
-        let value = getColor(yearPrediction?.price, yearMax.get(date), yearMin.get(date));
+        if (!nameOfPrediction)
+            return;
+
+        let yearPrediction = zonePrediction.get(nameOfPrediction);
+
+        let value = getColor(yearPrediction?yearPrediction[predYear]?.price:0,  yearMax.get(date) ?? 0, yearMin.get(date) ?? 0);
 
         let color = "rgba(" + value.r + ", " + value.g + "," + value.b + ", 0.5)";
-
 
         let newStyle: Style = new Style({
             fill: new Fill({
