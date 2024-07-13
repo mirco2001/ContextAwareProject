@@ -24,19 +24,17 @@ import {
 
 import { LocateFixed, Map } from "lucide-react"
 
-import { Map as MapOl, View, Overlay } from 'ol';
-import StadiaMaps from 'ol/source/StadiaMaps.js';
+import { Map as MapOl, View } from 'ol';
 import { fromLonLat } from "ol/proj"
 import { Point } from "ol/geom"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState, useRef, SetStateAction } from "react"
 import { Coordinate } from "ol/coordinate"
 import TileLayer from "ol/layer/Tile"
 import { OSM, XYZ } from "ol/source"
-import Feature from 'ol/Feature';
-import Text from 'ol/style/Text.js';
+import Feature, { FeatureLike } from 'ol/Feature';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
-import { Fill, Icon, RegularShape, Style, Stroke, Circle as CircleStyle } from "ol/style"
+import { Fill, Icon, RegularShape, Style } from "ol/style"
 import PoiToggleList from "@/components/myComponents/PoiToggleList"
 import { Link } from "react-router-dom";
 import { toLonLat } from 'ol/proj';
@@ -49,6 +47,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { attributions, key } from "@/common/keys";
+import { AddPoI, PoiData, PoiData2 } from "@/common/interfaces"
 
 
 const POIs = [
@@ -148,7 +147,7 @@ function Edit() {
 
 
     const [open, setOpen] = useState(false);
-    const [actualPOI, setActualPoi] = useState({
+    const [actualPOI, setActualPoi] = useState<PoiData2>({
         id: '',
         longitudine: '',
         latitudine: '',
@@ -156,11 +155,11 @@ function Edit() {
     });
     const [open2, setOpen2] = useState(false);
 
-    const [deletedList, setDeletedList] = useState([]);
-    const [addList, setAddList] = useState([]);
-    const [selectedValue, setSelectedValue] = useState("");
-    const [lastClickCoordinate, setLastClickCoordinate] = useState(null);
-    const [featureDel, setFeatureDel] = useState(null);
+    const [deletedList, setDeletedList] = useState<PoiData2[]>([]);
+    const [addList, setAddList] = useState<AddPoI[]>([]);
+    const [selectedValue, setSelectedValue] = useState<string>("");
+    const [lastClickCoordinate, setLastClickCoordinate] = useState<Coordinate | null>(null);
+    const [featureDel, setFeatureDel] = useState<any>(null);
 
     useEffect(() => {
         const tileLayerInstance = new TileLayer({
@@ -187,15 +186,16 @@ function Edit() {
 
 
         mapInstance.on('click', function (event) {
-            const feature = mapInstance.forEachFeatureAtPixel(event.pixel, (feature) => {
+            const feature = mapInstance.forEachFeatureAtPixel(event.pixel, (feature: FeatureLike) => {
                 setFeatureDel(feature);
                 setOpen(true);
                 setOpen2(false);
+                const properties = feature.getProperties();
                 setActualPoi({
-                    id: feature.values_.id,
-                    longitudine: feature.values_.longitudine,
-                    latitudine: feature.values_.latitudine,
-                    name: feature.values_.name
+                    id: properties.id,
+                    longitudine: properties.longitudine,
+                    latitudine: properties.latitudine,
+                    name: properties.name
                 });
                 return true;
             });
@@ -256,7 +256,7 @@ function Edit() {
         });
     }
 
-    function del(actualPOI) {
+    function del(actualPOI: PoiData2) {
         setDeletedList([...deletedList, actualPOI]);
         setOpen(false);
         if (featureDel) {
@@ -281,12 +281,10 @@ function Edit() {
         }
     }
 
-    function add(selectedValue) {
+    function add(selectedValue: string) {
         if (lastClickCoordinate) {
 
             const [lon, lat] = toLonLat(lastClickCoordinate);
-
-            console.log(lon, lat);
 
             const newEntry = {
                 name: selectedValue,
@@ -326,18 +324,17 @@ function Edit() {
             const vectorLayer = new VectorLayer({
                 source: vectorSource,
             });
-            map.addLayer(vectorLayer);
+            if(map)
+                map.addLayer(vectorLayer);
             setLastClickCoordinate(null);
         }
     }
 
-    function handleSelectChange(value) {
+    function handleSelectChange(value: string | SetStateAction<string>) {
         setSelectedValue(value);
     }
 
-    function apply(addList, deletedList) {
-        console.log(addList);
-        console.log(deletedList);
+    function apply(addList: AddPoI[], deletedList: PoiData2[]) {
 
         fetch('http://localhost:4000/DIPoI', {
             method: 'POST',
@@ -441,7 +438,7 @@ function Edit() {
 
                             <div className="flex flex-row w-full justify-between space-x-4">
 
-                                <Select onValueChange={(value: String) => handleSelectChange(value)}>
+                                <Select onValueChange={(value: string) => handleSelectChange(value)}>
                                     <SelectTrigger className="flex-1">
                                         <SelectValue
                                             placeholder="Seleziona un tipo di PoI..."

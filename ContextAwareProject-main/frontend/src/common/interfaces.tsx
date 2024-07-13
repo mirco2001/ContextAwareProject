@@ -15,6 +15,13 @@ export interface PoiData {
     latitude: number;
 }
 
+export interface PoiData2 {
+    id: string;
+    longitudine: string;
+    latitudine: string;
+    name: string;
+}
+
 export interface LayerInfo {
     layerName: string,
     layerIcon: string,
@@ -27,4 +34,12 @@ export interface zoneWithScore {
     id_area: number,
     nome: string,
     punteggio: string
+}
+
+export interface AddPoI{
+    name: string;
+    coordinates: {
+        lon: number;
+        lat: number;
+    };
 }
