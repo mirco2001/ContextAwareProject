@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { Feature, Map as MapOl, View } from 'ol';
 import { fromLonLat } from 'ol/proj';
 import GeoJSON from 'ol/format/GeoJSON.js';
-import StadiaMaps from 'ol/source/StadiaMaps.js';
 
 // import componenti shadecn
 import { Button } from "@/components/ui/button"
@@ -53,7 +52,7 @@ function MapSearch(props: any) {
     // - per la mappa  
     const [tileProvider, setTileProvider] = useState<string>("osm");
     const [tileLayer, setTilelayer] = useState<TileLayer<any>>();
-    const [mapView, setMapView] = useState();
+    const [mapView, setMapView] = useState<View | undefined>(undefined);
     const [map, setMap] = useState<MapOl>();
 
     const OSM_source = useRef(new OSM());
@@ -127,7 +126,8 @@ function MapSearch(props: any) {
                 tileLayer?.setSource(OSM_source.current);
         }
     }, [tileProvider])
-
+    
+    //@ts-ignore
     function circleToPolygon(circle, sides: number) {
         const geometry = circle.getGeometry();
 
@@ -153,24 +153,37 @@ function MapSearch(props: any) {
     function searcFromInfo() {
         let features: Feature<Geometry>[];
 
+
         // controllo il tipo di ricerca che si sta effettuando
         if (props.searchType != "zone") {
             // prendo il layer e se è presente estraggo la sua sorgente
             if (!layer)
                 return;
 
-            let vSource: VectorSource = layer.getSource();
+            const source = layer.getSource();
+            if (source !== null) {
+                let vSource: VectorSource<Feature<Geometry>> = source;
+                if (!vSource)
+                    return;
+                 // prendo tutte le feature presenti nella sorgente
+                features = vSource.getFeatures();
+                if (props.searchType == "address"){
+                    
+                    // nel caso in cui sto effettuando una ricerca per indirizzo
+                    // converto il cerchio in un poligono
+                    const originalFeature = features[0];
+                    const convertedFeature = circleToPolygon(originalFeature, 64);
+                    if (convertedFeature) {
+                        features = [convertedFeature];
+                    }
+                }
+            } else{
+                features = featuresInfo;
+            }
 
-            if (!vSource)
-                return;
+           
 
-            // prendo tutte le feature presenti nella sorgente
-            features = vSource.getFeatures();
-
-            // nel caso in cui sto effettuando una ricerca per indirizzo
-            // converto il cerchio in un poligono
-            if (props.searchType == "address")
-                features = [circleToPolygon(features[0], 64)];
+           
         }
         else
             features = featuresInfo; // se sto cercando per zona dovrò prendere i dati dalla lista delle zone
