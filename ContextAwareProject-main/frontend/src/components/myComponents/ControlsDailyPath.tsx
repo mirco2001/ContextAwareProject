@@ -9,10 +9,7 @@ import { useEffect, useState } from "react";
 // import componenti shadecn
 import {
     Card,
-    CardContent,
     CardDescription,
-    CardFooter,
-    CardHeader,
     CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -39,6 +36,8 @@ import { Trash2, ChevronUp, ChevronDown, Building2, MapPin, EllipsisVertical } f
 import { Coordinate } from "ol/coordinate";
 import { fromLonLat } from "ol/proj";
 import { Point } from "ol/geom";
+import { Address } from "@/common/interfaces";
+import { geoapify_key } from "@/common/keys";
 
 
 function ControlsDailyPath(props: any) {
@@ -229,7 +228,7 @@ function ControlsDailyPath(props: any) {
             method: 'GET',
         };
 
-        fetch("https://api.geoapify.com/v1/geocode/autocomplete?text=" + address + "&apiKey=af9bd9269d274a5dabcf4bfef2f875e3", requestOptions)
+        fetch("https://api.geoapify.com/v1/geocode/autocomplete?text=" + address + geoapify_key, requestOptions)
             .then(response => response.json())
             .then(
                 // se la richiesta va a buon aggiorno lo "stato" degli indirizzi trovati
@@ -249,7 +248,7 @@ function ControlsDailyPath(props: any) {
             return;
 
         // per ogni indirizzo ritrovato genero un "item"
-        return addresses.features.map((addres, index: number) =>
+        return addresses.features.map((addres:Address, index: number) =>
                 <CommandItem key={"address" + index}>
                     <div className="w-full flex justify-start flex-row content-center"
                         onClick={() => {

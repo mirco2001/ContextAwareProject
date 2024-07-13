@@ -1,8 +1,8 @@
 // import libreria openlayer
-import { Feature, View } from "ol";
+import { Feature} from "ol";
 import TileLayer from "ol/layer/Tile";
-import { fromLonLat, transform } from "ol/proj";
-import { OSM, StadiaMaps, XYZ } from "ol/source";
+import { transform } from "ol/proj";
+import { OSM, XYZ } from "ol/source";
 import { Map as MapOl } from 'ol';
 import { Coordinate } from "ol/coordinate";
 import { moveMapTo } from "@/lib/utils";
@@ -29,7 +29,7 @@ import {
 
 // import stili e icone
 import { Footprints, Accessibility, Car, Bike } from "lucide-react"
-import { attributions, key } from "@/common/keys";
+import { attributions, key, openrouteservice_key } from "@/common/keys";
 
 var waitTime = 2 * 1000; // 2 s in millis 
 var lastRequestTime: Date | null = null;
@@ -314,7 +314,7 @@ function MapDailyPath(props: any) {
         const headers = {
             'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
             'Content-Type': 'application/json',
-            'Authorization': '5b3ce3597851110001cf6248162e7ecb62784b71836d89d90e7548bf'
+            'Authorization': openrouteservice_key
         };
 
         // - punti che voglio attraversare 

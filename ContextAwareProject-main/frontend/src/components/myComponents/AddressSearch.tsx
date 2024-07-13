@@ -19,6 +19,8 @@ import { Separator } from "@/components/ui/separator";
 
 import { Building2 } from "lucide-react";
 import { moveMapTo } from "@/lib/utils";
+import { geoapify_key } from "@/common/keys";
+import { Address } from "@/common/interfaces";
 
 function AddressSearch(props: any) {
     const defaultRadius = 500;
@@ -51,7 +53,7 @@ function AddressSearch(props: any) {
     function geocodingApiRequest(address: string) {
         if (address === "") return;
 
-        fetch("https://api.geoapify.com/v1/geocode/autocomplete?text=" + address + "&apiKey=af9bd9269d274a5dabcf4bfef2f875e3")
+        fetch("https://api.geoapify.com/v1/geocode/autocomplete?text=" + address + geoapify_key)
             .then(response => response.json())
             .then(result => setAddresses(result))
             .catch(error => console.log('error', error));
@@ -62,11 +64,11 @@ function AddressSearch(props: any) {
 
         if (addresses.features.length <= 0) return null;
 
-        return addresses.features.map((address, index: number) => (
+        return addresses.features.map((address:Address, index: number) => (
             <CommandItem
-                key={"address" + index} 
+                key={"address" + index}
             >
-                <div className="w-full flex justify-start flex-row content-center"  onClick={() => {
+                <div className="w-full flex justify-start flex-row content-center" onClick={() => {
                     let addressLonLat: Coordinate = [address.properties.lon, address.properties.lat];
                     setChosenAddress(addressLonLat);
                     moveMapTo(addressLonLat, 14, props.map);

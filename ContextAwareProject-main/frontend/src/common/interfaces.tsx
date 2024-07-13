@@ -43,3 +43,24 @@ export interface AddPoI{
         lat: number;
     };
 }
+
+export interface Address { 
+    properties: { 
+        lon: number; 
+        lat: number; 
+        address_line1: string; 
+        address_line2: string; 
+    }
+}
+
+export interface MoranData {
+    geometry: {
+        coordinates: any[];
+    };
+    properties: {
+        value_local_moran: string;
+        name: string;
+        value: number;
+        value_local_moran_p_sim: number;
+    };
+}

@@ -1,12 +1,12 @@
 // import libreria openlayer
-import { Feature, Map as MapOl, View } from 'ol';
+import { Feature, Map as MapOl } from 'ol';
 import { Coordinate } from 'ol/coordinate';
 import GeoJSON from 'ol/format/GeoJSON';
 import { Geometry } from 'ol/geom';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
-import { fromLonLat, transform } from 'ol/proj';
-import { OSM, StadiaMaps, XYZ } from 'ol/source';
+import { transform } from 'ol/proj';
+import { OSM, XYZ } from 'ol/source';
 import VectorSource from 'ol/source/Vector';
 import { Fill, Icon, RegularShape, Stroke, Style } from 'ol/style';
 
@@ -37,7 +37,7 @@ import { useEffect, useRef, useState } from 'react'
 import { moveMapTo } from '@/lib/utils';
 import { geofenceNormalStyle } from '@/common/geofenceStyles';
 import { LayerInfo } from '@/common/interfaces';
-import { attributions, key } from '@/common/keys';
+import { attributions, key, openrouteservice_key } from '@/common/keys';
 
 
 function MapIsochrones(props: any) {
@@ -197,7 +197,7 @@ function MapIsochrones(props: any) {
             method: 'POST',
             headers: {
                 'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
-                'Authorization': '5b3ce3597851110001cf6248162e7ecb62784b71836d89d90e7548bf',
+                'Authorization': openrouteservice_key,
                 'Content-Type': 'application/json; charset=utf-8',
             },
             body: JSON.stringify({
@@ -288,6 +288,9 @@ function MapIsochrones(props: any) {
 
                     // -- trovo le coordinate della feature
                     let featureGeometry = element.getGeometry();
+                    if(!featureGeometry)
+                        return;
+
                     let featureCoord = featureGeometry.getCoordinates();
 
                     // -- Verifico se le sue coordinate intersecano reachableGeometry

@@ -1,7 +1,6 @@
 import TileLayer from "ol/layer/Tile";
 import { OSM, XYZ } from "ol/source";
-import { Map as MapOl, View } from 'ol';
-import { fromLonLat } from 'ol/proj';
+import { Map as MapOl } from 'ol';
 import Feature from 'ol/Feature';
 import Fill from "ol/style/Fill";
 import Stroke from "ol/style/Stroke";
@@ -19,15 +18,21 @@ import { useEffect, useRef, useState } from "react";
 import { getColor } from "@/lib/utils";
 import { attributions, key } from "@/common/keys";
 
+interface clusterInfo {
+    cid: number,
+    centroide:string,
+    punteggio: string
+}
+
 
 function MapClusters(props: any) {
 
-    const [map, setMap] = useState<MapOl | undefined>(undefined);
+    const [map, setMap] = useState<MapOl | null>(null);
     const [tileLayer, setTilelayer] = useState<TileLayer<any>>();
-    const [cluster, setCluster] = useState(null);
+    const [cluster, setCluster] = useState<clusterInfo[]|null>(null);
 
     const OSM_source = useRef(new OSM());
-    const aerial_source  = useRef(new XYZ({
+    const aerial_source = useRef(new XYZ({
         attributions: attributions,
         url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=' + key,
         tileSize: 512,
@@ -53,7 +58,7 @@ function MapClusters(props: any) {
 
         return () => {
             if (mapInstance) {
-                mapInstance.setTarget(null);
+                mapInstance.setTarget(undefined);
             }
         };
     }, []);
@@ -89,8 +94,7 @@ function MapClusters(props: any) {
             .then(response => response.json())
             .then(data => {
                 setCluster(data);
-                console.log(data);
-                
+
             })
             .catch(error => {
                 console.error('Errore nella fetch:', error);
@@ -109,12 +113,13 @@ function MapClusters(props: any) {
         var min = Number.MAX_VALUE; // Inizializza min con il massimo valore possibile
         var max = Number.MIN_VALUE; // Inizializza max con il minimo valore possibile
 
-        cluster.forEach(({ centroide, cid, punteggio }) => {
-            if (parseInt(punteggio) < min) {
-                min = parseInt(punteggio);
+        cluster.forEach((element:clusterInfo) => {
+
+            if (parseInt(element.punteggio) < min) {
+                min = parseInt(element.punteggio);
             }
-            if (parseInt(punteggio) > max) {
-                max = parseInt(punteggio);
+            if (parseInt(element.punteggio) > max) {
+                max = parseInt(element.punteggio);
             }
         });
 

@@ -43,7 +43,7 @@ function ZoneSearch(props: any) {
             .then(response => response.json())
             .then(data => {
                 // se i dati sono stati presi con successo aggiorno lo "stato dei dati sulle zone"
-                setZonesData(data)
+                setZonesData(data.rows)
             })
             .catch(error => {
                 // se ci sono stati problemi visualizzo messaggio di errore
@@ -80,7 +80,7 @@ function ZoneSearch(props: any) {
         // controllo che:
         // - i dati siano validi
         // - sia presente il vector layer
-        if (zonesData.rows == undefined || !props.layer)
+        if (zonesData == undefined || !props.layer)
             return;
 
         // estraggo la "source" del vector layer 
@@ -97,7 +97,7 @@ function ZoneSearch(props: any) {
         vSource.clear();
 
         // - per ogni zona che è stata "recuperata"
-        zonesData.rows.forEach(element => {
+        zonesData.forEach(element => {
 
             // prendo la geometria, 
             // creo una feature con essa,

@@ -8,7 +8,7 @@ import { Fill, Stroke, Style } from "ol/style"
 import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
 import TextOl from 'ol/style/Text.js';
-import { Map as MapOl, View } from 'ol';
+import { Map as MapOl } from 'ol';
 import TileLayer from "ol/layer/Tile";
 import { Coordinate } from 'ol/coordinate';
 import { FeatureLike } from 'ol/Feature';
@@ -25,7 +25,8 @@ import {
 import { Separator } from "@/components/ui/separator"
 import {geofenceNormalStyle} from '@/common/geofenceStyles';
 import { attributions, key } from '@/common/keys';
-
+import { Pixel } from 'ol/pixel';
+import { MoranData } from '@/common/interfaces';
 
 // LL prezzo basso vicino basso
 const LLstyle = new Style({
@@ -85,7 +86,7 @@ function MapMoran(props: any) {
         maxZoom: 20,
     }));
 
-    const [moranData, setMoranData] = useState();
+    const [moranData, setMoranData] = useState<MoranData[]>();
 
     const [moranIndex, setMoranIndex] = useState<number>();
     const [pValue, setPvalue] = useState<number>();
@@ -140,7 +141,7 @@ function MapMoran(props: any) {
     }
 
     useEffect(() => {
-        if (!mapMoran)
+        if (!mapMoran || !info)
             return;
 
         info.style.visibility = 'hidden';
@@ -163,7 +164,7 @@ function MapMoran(props: any) {
 
     }, [mapMoran]);
 
-    const displayFeatureInfo = function (pixel, target) {
+    const displayFeatureInfo = function (pixel: Pixel, target: { closest: (arg0: string) => any; }) {
         if (!info || !mapMoran)
             return;
 
@@ -202,7 +203,7 @@ function MapMoran(props: any) {
             .then(response => response.json())
             .then(data => {
 
-                setMoranData(data);
+                setMoranData(data.features);
 
             })
             .catch(error => {
@@ -234,7 +235,7 @@ function MapMoran(props: any) {
 
         let features: Feature[] = []
 
-        moranData.features.forEach(element => {
+        moranData.forEach(element => {
 
             let coordinateBlock = element.geometry.coordinates[0];
 
@@ -311,14 +312,15 @@ function MapMoran(props: any) {
                 id="mapMoran"
                 className="map-container"
                 onMouseOut={() => {
-                    info.style.visibility = 'hidden';
+                    if(info)
+                        info.style.visibility = 'hidden';
                 }}>
                 <Card id="info" className='flex flex-row justify-around p-2 z-10 absolute pointer-events-none space-x-2'>
                     <div className='text-center'>Prezzo Medio <p className="text-l text-muted-foreground">{zoneAveragePrice} €</p></div>
 
                     <div className='border' />
 
-                    <div className='text-center'>P simulato <p className="text-l text-muted-foreground">{Math.round(pValueLocal * 1000) / 10}%</p></div>
+                    <div className='text-center'>P simulato <p className="text-l text-muted-foreground">{Math.round((pValueLocal?pValueLocal:0) * 1000) / 10}%</p></div>
                 </Card>
             </div>
 
@@ -328,7 +330,7 @@ function MapMoran(props: any) {
 
                     <div className='border' />
 
-                    <div className='text-center'>P simulato <p className="text-xl text-muted-foreground">{Math.round(pValue * 1000) / 10}%</p></div>
+                    <div className='text-center'>P simulato <p className="text-xl text-muted-foreground">{Math.round((pValue?pValue:0) * 1000) / 10}%</p></div>
                 </div>
 
                 <Separator />

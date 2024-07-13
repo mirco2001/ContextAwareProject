@@ -1,12 +1,11 @@
 // import libreria openlayer
 import { Feature } from 'ol';
-import { fromLonLat } from "ol/proj"
 import { Geometry } from "ol/geom"
 import { useEffect, useRef, useState } from "react"
 import { OSM, XYZ } from "ol/source"
 import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
-import { Map as MapOl, View } from 'ol';
+import { Map as MapOl } from 'ol';
 import TileLayer from "ol/layer/Tile";
 import { Pixel } from 'ol/pixel';
 import WKB from 'ol/format/WKB';
@@ -183,7 +182,7 @@ function MapBestZone(props: any) {
 
 
     useEffect(() => {
-        if (!mapBestZone)
+        if (!mapBestZone || !info)
             return;
 
         info.style.visibility = 'hidden';
@@ -206,7 +205,8 @@ function MapBestZone(props: any) {
 
     }, [mapBestZone]);
 
-    const displayFeatureInfo = function (pixel: Pixel, target) {
+    const displayFeatureInfo = function (pixel: Pixel, target: { closest: (arg0: string) => any; }) {
+
         if (!info || !mapBestZone)
             return;
 

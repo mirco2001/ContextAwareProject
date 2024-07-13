@@ -1,6 +1,5 @@
 // import libreria openlayer
 import { Feature } from 'ol';
-import { fromLonLat } from "ol/proj"
 import { Geometry } from "ol/geom"
 import { ReactElement, useEffect, useRef, useState } from "react"
 import { OSM, XYZ } from "ol/source"
@@ -8,7 +7,7 @@ import { Fill, Stroke, Style } from "ol/style"
 import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
 import TextOl from 'ol/style/Text.js';
-import { Map as MapOl, View } from 'ol';
+import { Map as MapOl } from 'ol';
 import TileLayer from "ol/layer/Tile";
 import { Pixel } from 'ol/pixel';
 import WKB from 'ol/format/WKB';
@@ -484,7 +483,6 @@ function MapPrediction(props: any) {
         let predYear: number = predictionDates.indexOf(date);
 
         let yearPrediction = zonePrediction.get(getPredictionName(zoneName))[predYear];
-
 
         let value = getColor(yearPrediction?.price, yearMax.get(date), yearMin.get(date));
 
