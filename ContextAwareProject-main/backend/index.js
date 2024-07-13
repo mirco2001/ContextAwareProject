@@ -321,7 +321,7 @@ app.post('/DIPoI', async (req, res) => {
 
     dltpoi.forEach(async item => {
       if (item.name == "Supermercati") {
-        var dlt = await pool.query(`DELETE  FROM Supermercati Where ogc_fid = ${item.id}`);
+        var dlt = await pool.query(`DELETE  FROM supermercati Where ogc_fid = ${item.id}`);
       }
 
       if (item.name == "Banche") {
@@ -389,7 +389,11 @@ app.post('/DIPoI', async (req, res) => {
       }
 
       if (item.name == "Biblioteche") {
-        var dlt = await pool.query(`DELETE  FROM biblioteca Where ogc_fid = ${item.id}`);
+        var dlt = await pool.query(`DELETE  FROM biblioteche Where ogc_fid = ${item.id}`);
+      }
+
+      if (item.name == "Cinema") {
+        var dlt = await pool.query(`DELETE  FROM cinema Where ogc_fid = ${item.id}`);
       }
     });
     istpoi.forEach(async item => {
@@ -462,61 +466,65 @@ app.post('/DIPoI', async (req, res) => {
       if (item.name == "Biblioteche") {
         var insert = await pool.query(`INSERT INTO biblioteche ("biblioteca",  "geo_point_2d") VALUES  ('${item.name}',  '{"lon": ${item.lon}, "lat": ${item.lat}}'::json);`);
       }
+
+      if (item.name == "Cinema") {
+        var insert = await pool.query(`INSERT INTO cinema("nome", "geo_point_2d") VALUES('${item.name}', '{"lon": ${item.lon}, "lat": ${item.lat}}':: json);`);
+  }
     });
 
-    var refresh1 = await pool.query(`REFRESH MATERIALIZED VIEW biblioteche_vicini;`);
-    var refresh2 = await pool.query(`REFRESH MATERIALIZED VIEW eventi_vicini;`);
-    var refresh3 = await pool.query(`REFRESH MATERIALIZED VIEW sport_vicini;`);
-    var refresh4 = await pool.query(`REFRESH MATERIALIZED VIEW picnic_vicini;`);
-    var refresh5 = await pool.query(`REFRESH MATERIALIZED VIEW giochi_vicini;`);
-    var refresh6 = await pool.query(`REFRESH MATERIALIZED VIEW parchi_vicini;`);
-    var refresh7 = await pool.query(`REFRESH MATERIALIZED VIEW palestre_vicini;`);
-    var refresh8 = await pool.query(`REFRESH MATERIALIZED VIEW doposcuola_vicini;`);
-    var refresh9 = await pool.query(`REFRESH MATERIALIZED VIEW fermatebus_vicini;`);
-    var refresh10 = await pool.query(`REFRESH MATERIALIZED VIEW stazioniferroviarie_vicini;`);
-    var refresh11 = await pool.query(`REFRESH MATERIALIZED VIEW parcheggi_vicini;`);
-    var refresh12 = await pool.query(`REFRESH MATERIALIZED VIEW ospedali_vicini;`);
-    var refresh13 = await pool.query(`REFRESH MATERIALIZED VIEW banche_vicini;`);
-    var refresh14 = await pool.query(`REFRESH MATERIALIZED VIEW cinema_vicini;`);
-    var refresh15 = await pool.query(`REFRESH MATERIALIZED VIEW musei_vicini;`);
-    var refresh16 = await pool.query(`REFRESH MATERIALIZED VIEW farmacie_vicini;`);
-    var refresh17 = await pool.query(`REFRESH MATERIALIZED VIEW supermercati_vicini;`);
-    var refresh18 = await pool.query(`REFRESH MATERIALIZED VIEW ristoranti_vicini;`);
-    var refresh19 = await pool.query(`REFRESH MATERIALIZED VIEW scuole_vicini;`);
-    var refresh20 = await pool.query(`REFRESH MATERIALIZED VIEW colonnine_vicini;`);
-    var rf = await pool.query(`REFRESH MATERIALIZED VIEW biblioteche_vicinia;`);
-    var rf2 = await pool.query(`REFRESH MATERIALIZED VIEW eventi_vicinia;`);
-    var rf3 = await pool.query(`REFRESH MATERIALIZED VIEW sport_vicinia;`);
-    var rf4 = await pool.query(`REFRESH MATERIALIZED VIEW picnic_vicinia;`);
-    var rf5 = await pool.query(`REFRESH MATERIALIZED VIEW giochi_vicinia;`);
-    var rf6 = await pool.query(`REFRESH MATERIALIZED VIEW parchi_vicinia;`);
-    var rf7 = await pool.query(`REFRESH MATERIALIZED VIEW palestre_vicinia;`);
-    var rf8 = await pool.query(`REFRESH MATERIALIZED VIEW doposcuola_vicinia;`);
-    var rf9 = await pool.query(`REFRESH MATERIALIZED VIEW fermatebus_vicinia;`);
-    var rf10 = await pool.query(`REFRESH MATERIALIZED VIEW stazioniferroviarie_vicinia;`);
-    var rf11 = await pool.query(`REFRESH MATERIALIZED VIEW parcheggi_vicinia;`);
-    var rf12 = await pool.query(`REFRESH MATERIALIZED VIEW ospedali_vicinia;`);
-    var rf13 = await pool.query(`REFRESH MATERIALIZED VIEW banche_vicinia;`);
-    var rf14 = await pool.query(`REFRESH MATERIALIZED VIEW cinema_vicinia;`);
-    var rf15 = await pool.query(`REFRESH MATERIALIZED VIEW musei_vicinia;`);
-    var rf16 = await pool.query(`REFRESH MATERIALIZED VIEW farmacie_vicinia;`);
-    var rf17 = await pool.query(`REFRESH MATERIALIZED VIEW supermercati_vicinia;`);
-    var rf18 = await pool.query(`REFRESH MATERIALIZED VIEW ristoranti_vicinia;`);
-    var rf19 = await pool.query(`REFRESH MATERIALIZED VIEW scuole_vicinia;`);
-    var rf20 = await pool.query(`REFRESH MATERIALIZED VIEW colonnine_vicinia;`);
-    var rfh = await pool.query(`REFRESH MATERIALIZED VIEW aree_selezionate;`);
-    var refresh = await pool.query(`REFRESH MATERIALIZED VIEW edifici_selezionati;`);
-    var refresh = await pool.query(`REFRESH MATERIALIZED VIEW vista_poi_aggregata_cluster;`);
-    var rfh = await pool.query(`REFRESH MATERIALIZED VIEW clustered_centroids;`);
-    var refresh = await pool.query(`REFRESH MATERIALIZED VIEW vista_cluster_poi_aggregati;`);
+var refresh1 = await pool.query(`REFRESH MATERIALIZED VIEW biblioteche_vicini;`);
+var refresh2 = await pool.query(`REFRESH MATERIALIZED VIEW eventi_vicini;`);
+var refresh3 = await pool.query(`REFRESH MATERIALIZED VIEW sport_vicini;`);
+var refresh4 = await pool.query(`REFRESH MATERIALIZED VIEW picnic_vicini;`);
+var refresh5 = await pool.query(`REFRESH MATERIALIZED VIEW giochi_vicini;`);
+var refresh6 = await pool.query(`REFRESH MATERIALIZED VIEW parchi_vicini;`);
+var refresh7 = await pool.query(`REFRESH MATERIALIZED VIEW palestre_vicini;`);
+var refresh8 = await pool.query(`REFRESH MATERIALIZED VIEW doposcuola_vicini;`);
+var refresh9 = await pool.query(`REFRESH MATERIALIZED VIEW fermatebus_vicini;`);
+var refresh10 = await pool.query(`REFRESH MATERIALIZED VIEW stazioniferroviarie_vicini;`);
+var refresh11 = await pool.query(`REFRESH MATERIALIZED VIEW parcheggi_vicini;`);
+var refresh12 = await pool.query(`REFRESH MATERIALIZED VIEW ospedali_vicini;`);
+var refresh13 = await pool.query(`REFRESH MATERIALIZED VIEW banche_vicini;`);
+var refresh14 = await pool.query(`REFRESH MATERIALIZED VIEW cinema_vicini;`);
+var refresh15 = await pool.query(`REFRESH MATERIALIZED VIEW musei_vicini;`);
+var refresh16 = await pool.query(`REFRESH MATERIALIZED VIEW farmacie_vicini;`);
+var refresh17 = await pool.query(`REFRESH MATERIALIZED VIEW supermercati_vicini;`);
+var refresh18 = await pool.query(`REFRESH MATERIALIZED VIEW ristoranti_vicini;`);
+var refresh19 = await pool.query(`REFRESH MATERIALIZED VIEW scuole_vicini;`);
+var refresh20 = await pool.query(`REFRESH MATERIALIZED VIEW colonnine_vicini;`);
+var rf = await pool.query(`REFRESH MATERIALIZED VIEW biblioteche_vicinia;`);
+var rf2 = await pool.query(`REFRESH MATERIALIZED VIEW eventi_vicinia;`);
+var rf3 = await pool.query(`REFRESH MATERIALIZED VIEW sport_vicinia;`);
+var rf4 = await pool.query(`REFRESH MATERIALIZED VIEW picnic_vicinia;`);
+var rf5 = await pool.query(`REFRESH MATERIALIZED VIEW giochi_vicinia;`);
+var rf6 = await pool.query(`REFRESH MATERIALIZED VIEW parchi_vicinia;`);
+var rf7 = await pool.query(`REFRESH MATERIALIZED VIEW palestre_vicinia;`);
+var rf8 = await pool.query(`REFRESH MATERIALIZED VIEW doposcuola_vicinia;`);
+var rf9 = await pool.query(`REFRESH MATERIALIZED VIEW fermatebus_vicinia;`);
+var rf10 = await pool.query(`REFRESH MATERIALIZED VIEW stazioniferroviarie_vicinia;`);
+var rf11 = await pool.query(`REFRESH MATERIALIZED VIEW parcheggi_vicinia;`);
+var rf12 = await pool.query(`REFRESH MATERIALIZED VIEW ospedali_vicinia;`);
+var rf13 = await pool.query(`REFRESH MATERIALIZED VIEW banche_vicinia;`);
+var rf14 = await pool.query(`REFRESH MATERIALIZED VIEW cinema_vicinia;`);
+var rf15 = await pool.query(`REFRESH MATERIALIZED VIEW musei_vicinia;`);
+var rf16 = await pool.query(`REFRESH MATERIALIZED VIEW farmacie_vicinia;`);
+var rf17 = await pool.query(`REFRESH MATERIALIZED VIEW supermercati_vicinia;`);
+var rf18 = await pool.query(`REFRESH MATERIALIZED VIEW ristoranti_vicinia;`);
+var rf19 = await pool.query(`REFRESH MATERIALIZED VIEW scuole_vicinia;`);
+var rf20 = await pool.query(`REFRESH MATERIALIZED VIEW colonnine_vicinia;`);
+var rfh = await pool.query(`REFRESH MATERIALIZED VIEW aree_selezionate;`);
+var refresh = await pool.query(`REFRESH MATERIALIZED VIEW edifici_selezionati;`);
+var refresh = await pool.query(`REFRESH MATERIALIZED VIEW vista_poi_aggregata_cluster;`);
+var rfh = await pool.query(`REFRESH MATERIALIZED VIEW clustered_centroids;`);
+var refresh = await pool.query(`REFRESH MATERIALIZED VIEW vista_cluster_poi_aggregati;`);
 
-    istpoi = [];
-    dltpoi = [];
+istpoi = [];
+dltpoi = [];
 
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send();
-  }
+  console.error(error.message);
+  res.status(500).send();
+}
 
 });
 
@@ -874,25 +882,25 @@ app.get('/moranData', async (req, res) => {
 app.get("/getPoI", async (req, res) => {
   try {
     const listPoi = {
-      vicinanza_cinema: cinema ,
-      vicinanza_areePicnic: picnic ,
-      vicinanza_areeSport: sport ,
-      vicinanza_banche: banche ,
-      vicinanza_biblioteche: biblio ,
-      vicinanza_dopoScuola: dpscuola ,
-      vicinanza_fermateBus: bus ,
-      vicinanza_fermateTreno: treno ,
-      vicinanza_intrattenimentoNotturno: intrattenimento ,
-      vicinanza_museiGallerieArte: musei ,
-      vicinanza_ospedali: ospedali ,
-      vicinanza_parcheggi: parcheggi ,
-      vicinanza_parcheggiColonnine: colonnine ,
-      vicinanza_parchi: parchi ,
-      vicinanza_parchiGiochi: areegiochi ,
-      vicinanza_ristoranti: ristorante ,
-      vicinanza_scuole: scuole ,
-      vicinanza_supermercati: supermercati ,
-      vicinanza_farmacie: farm ,
+      vicinanza_cinema: cinema,
+      vicinanza_areePicnic: picnic,
+      vicinanza_areeSport: sport,
+      vicinanza_banche: banche,
+      vicinanza_biblioteche: biblio,
+      vicinanza_dopoScuola: dpscuola,
+      vicinanza_fermateBus: bus,
+      vicinanza_fermateTreno: treno,
+      vicinanza_intrattenimentoNotturno: intrattenimento,
+      vicinanza_museiGallerieArte: musei,
+      vicinanza_ospedali: ospedali,
+      vicinanza_parcheggi: parcheggi,
+      vicinanza_parcheggiColonnine: colonnine,
+      vicinanza_parchi: parchi,
+      vicinanza_parchiGiochi: areegiochi,
+      vicinanza_ristoranti: ristorante,
+      vicinanza_scuole: scuole,
+      vicinanza_supermercati: supermercati,
+      vicinanza_farmacie: farm,
       vicinanza_palestre: pal
     };
 

@@ -324,7 +324,7 @@ function Edit() {
             const vectorLayer = new VectorLayer({
                 source: vectorSource,
             });
-            if(map)
+            if (map)
                 map.addLayer(vectorLayer);
             setLastClickCoordinate(null);
         }
@@ -386,17 +386,17 @@ function Edit() {
 
             <ResizablePanel minSize={10} maxSize={20} className="flex flex-col justify-around px-6 pb-4">
                 <PoiToggleList map={map} />
-                <Link
-                    className="flex-none"
-                    to={'/home'}>
-                    <Button
-                        className="bg-[#307351] hover:bg-[#285f43] w-full"
-                        variant={"destructive"}
-                        onClick={() => apply(addList, deletedList)}
-                    >
-                        Applica Modifiche
-                    </Button>
-                </Link>
+
+                <Button
+                    className="bg-[#307351] hover:bg-[#285f43] w-full"
+                    variant={"destructive"}
+                    onClick={() => {
+                        apply(addList, deletedList);
+                        window.location.href = "/home";
+                    }}
+                >
+                    Applica Modifiche
+                </Button>
             </ResizablePanel>
 
             {open && (
