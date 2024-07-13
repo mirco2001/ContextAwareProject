@@ -2,8 +2,8 @@
 import { Feature } from 'ol';
 import { fromLonLat } from "ol/proj"
 import { Geometry } from "ol/geom"
-import { useEffect, useState } from "react"
-import { OSM } from "ol/source"
+import { useEffect, useRef, useState } from "react"
+import { OSM, XYZ } from "ol/source"
 import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
 import { Map as MapOl, View } from 'ol';
@@ -21,13 +21,23 @@ import { Separator } from "@/components/ui/separator"
 import { getColor } from "@/lib/utils";
 import { coloredStyleWithName, normalStyleWithName } from '@/common/geofenceStyles';
 import { zoneWithScore } from '@/common/interfaces';
+import { attributions, key } from '@/common/keys';
 
 function MapBestZone(props: any) {
 
     // === DICHIARAZIONE DEGLLE VARIABILI STATE ===
     // - per la gestione della mappa e dei suoi layer
     const [mapBestZone, setMapBestZone] = useState<MapOl>();
+    const [tileLayer, setTilelayer] = useState<TileLayer<any>>();
     const [zonesLayer, setZonesLayer] = useState<VectorLayer<Feature<Geometry>> | undefined>(undefined);
+
+    const OSM_source = useRef(new OSM());
+    const aerial_source  = useRef(new XYZ({
+        attributions: attributions,
+        url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=' + key,
+        tileSize: 512,
+        maxZoom: 20,
+    }));
 
     const [datiZone, setDatiZone] = useState<zoneWithScore[]>();
 
@@ -42,18 +52,17 @@ function MapBestZone(props: any) {
 
     // creazione della mappa
     useEffect(() => {
-        const osmLayer = new TileLayer({
+        const tileLayerInstance = new TileLayer({
             preload: Infinity,
-            source: new OSM(),
+            source: getTileProvider(props.tileProvider),
         });
+
+        setTilelayer(tileLayerInstance)
 
         const mapInstance = new MapOl({
             target: "mapBestZone",
-            layers: [osmLayer],
-            view: new View({
-                center: fromLonLat(props.bolognaCenter.lon_lat),
-                zoom: props.bolognaCenter.zoom,
-            }),
+            layers: [tileLayerInstance],
+            view: props.mapView,
         });
 
         setMapBestZone(mapInstance);
@@ -64,6 +73,27 @@ function MapBestZone(props: any) {
             }
         };
     }, []);
+
+    useEffect(() => {
+        if (!props.tileProvider)
+            return;
+
+        tileLayer?.setSource(getTileProvider(props.tileProvider));
+
+    }, [props.tileProvider]);
+
+
+    function getTileProvider(provider: string) {
+
+        switch (provider) {
+            case "osm":
+                return OSM_source.current;
+            case "aerial":
+                return aerial_source.current;
+            default:
+                return OSM_source.current;
+        }
+    }
 
     useEffect(() => {
         // recupero i dati delle zone

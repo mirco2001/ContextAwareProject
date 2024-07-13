@@ -12,8 +12,17 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import {
+    Card
+} from "@/components/ui/card"
 
-import { LocateFixed } from "lucide-react"
+import { LocateFixed, Map } from "lucide-react"
 
 import { Map as MapOl, View, Overlay } from 'ol';
 import StadiaMaps from 'ol/source/StadiaMaps.js';
@@ -22,7 +31,7 @@ import { Point } from "ol/geom"
 import { useEffect, useState, useRef } from "react"
 import { Coordinate } from "ol/coordinate"
 import TileLayer from "ol/layer/Tile"
-import { OSM } from "ol/source"
+import { OSM, XYZ } from "ol/source"
 import Feature from 'ol/Feature';
 import Text from 'ol/style/Text.js';
 import VectorLayer from 'ol/layer/Vector';
@@ -39,6 +48,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import { attributions, key } from "@/common/keys";
 
 
 const POIs = [
@@ -122,8 +132,21 @@ const POIs = [
 
 
 function Edit() {
+    // ==== variabili state globali ====
 
+    // - per la mappa
     const [map, setMap] = useState<MapOl>();
+    const [tileProvider, setTileProvider] = useState<string>("osm");
+    const [tileLayer, setTilelayer] = useState<TileLayer<any>>();
+    const OSM_source = useRef(new OSM());
+    const aerial_source = useRef(new XYZ({
+        attributions: attributions,
+        url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=' + key,
+        tileSize: 512,
+        maxZoom: 20,
+    }));
+
+
     const [open, setOpen] = useState(false);
     const [actualPOI, setActualPoi] = useState({
         id: '',
@@ -140,15 +163,16 @@ function Edit() {
     const [featureDel, setFeatureDel] = useState(null);
 
     useEffect(() => {
-
-        const osmLayer = new TileLayer({
+        const tileLayerInstance = new TileLayer({
             preload: Infinity,
-            source: new OSM(),
+            source: OSM_source.current,
         });
+
+        setTilelayer(tileLayerInstance)
 
         const mapInstance = new MapOl({
             target: "map",
-            layers: [osmLayer],
+            layers: [tileLayerInstance],
             view: new View({
                 center: fromLonLat(bolognaCenter.lon_lat),
                 zoom: bolognaCenter.zoom,
@@ -196,6 +220,22 @@ function Edit() {
             }
         };
     }, []);
+
+    useEffect(() => {
+        if (!tileProvider)
+            return
+
+        switch (tileProvider) {
+            case "osm":
+                tileLayer?.setSource(OSM_source.current);
+                break;
+            case "aerial":
+                tileLayer?.setSource(aerial_source.current);
+                break;
+            default:
+                tileLayer?.setSource(OSM_source.current);
+        }
+    }, [tileProvider])
 
 
     const bolognaCenter = {
@@ -314,7 +354,7 @@ function Edit() {
 
     return (
         <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel>
+            <ResizablePanel className='relative'>
                 <div style={{ height: '100%', width: '100%' }} id="map" className="map-container" />
                 <Button
                     variant="outline"
@@ -323,6 +363,26 @@ function Edit() {
                     onClick={() => moveMapTo(bolognaCenter.lon_lat, bolognaCenter.zoom)}>
                     <LocateFixed className="h-4 w-4" />
                 </Button>
+
+                <Popover>
+                    <PopoverTrigger
+                        className="absolute top-5 right-5 z-10">
+                        <Card className='p-2'>
+                            <Map />
+                        </Card>
+                    </PopoverTrigger>
+                    <PopoverContent align='end' className='w-min'>
+                        <ToggleGroup
+                            type="single"
+                            value={tileProvider}
+                            className='flex flex-col'
+                            onValueChange={(value: string) => setTileProvider(value)}
+                        >
+                            <ToggleGroupItem className='w-full' value="osm">OSM</ToggleGroupItem>
+                            <ToggleGroupItem className='w-full' value="aerial">Aerial</ToggleGroupItem>
+                        </ToggleGroup>
+                    </PopoverContent>
+                </Popover>
             </ResizablePanel>
 
             <ResizableHandle />

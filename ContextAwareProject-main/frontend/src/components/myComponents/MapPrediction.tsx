@@ -2,8 +2,8 @@
 import { Feature } from 'ol';
 import { fromLonLat } from "ol/proj"
 import { Geometry } from "ol/geom"
-import { ReactElement, useEffect, useState } from "react"
-import { OSM } from "ol/source"
+import { ReactElement, useEffect, useRef, useState } from "react"
+import { OSM, XYZ } from "ol/source"
 import { Fill, Stroke, Style } from "ol/style"
 import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
@@ -25,6 +25,7 @@ import { Slider } from "@/components/ui/slider"
 import { LineChart } from '@mui/x-charts/LineChart';
 
 import { getColor } from "@/lib/utils";
+import { attributions, key } from '@/common/keys';
 
 interface predictionData {
     date: string;
@@ -37,7 +38,16 @@ function MapPrediction(props: any) {
 
     // === DICHIARAZIONE DEGLLE VARIABILI STATE ===
     // - per la gestione della mappa e dei suoi layer
+    const [tileLayer, setTilelayer] = useState<TileLayer<any>>();    
     const [mapPrediction, setMapPrediction] = useState<MapOl>();
+    const OSM_source = useRef(new OSM());
+    const aerial_source  = useRef(new XYZ({
+        attributions: attributions,
+        url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=' + key,
+        tileSize: 512,
+        maxZoom: 20,
+    }));
+
     const [layer, setLayer] = useState<VectorSource<Feature<Geometry>>>();
 
     // per la recezione dei dati dal back
@@ -57,18 +67,17 @@ function MapPrediction(props: any) {
 
     // creazione della mappa
     useEffect(() => {
-        const osmLayer = new TileLayer({
+        const tileLayerInstance = new TileLayer({
             preload: Infinity,
-            source: new OSM(),
+            source: getTileProvider(props.tileProvider),
         });
+
+        setTilelayer(tileLayerInstance)
 
         const mapInstance = new MapOl({
             target: "mapPrediction",
-            layers: [osmLayer],
-            view: new View({
-                center: fromLonLat(props.bolognaCenter.lon_lat),
-                zoom: props.bolognaCenter.zoom,
-            }),
+            layers: [tileLayerInstance],
+            view: props.mapView,
         });
 
         setMapPrediction(mapInstance);
@@ -79,6 +88,27 @@ function MapPrediction(props: any) {
             }
         };
     }, []);
+
+    useEffect(() => {
+        if (!props.tileProvider)
+            return;
+
+        tileLayer?.setSource(getTileProvider(props.tileProvider));
+
+    }, [props.tileProvider]);
+
+
+    function getTileProvider(provider: string) {
+
+        switch (provider) {
+            case "osm":
+                return OSM_source.current;
+            case "aerial":
+                return aerial_source.current;
+            default:
+                return OSM_source.current;
+        }
+    }
 
     // recupero dei dati dal back
     useEffect(() => {

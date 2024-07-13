@@ -93,10 +93,7 @@ function MapSearch(props: any) {
         const mapInstance = new MapOl({
             target: "map",
             layers: [tileLayerInstance],
-            view: new View({
-                center: fromLonLat(bolognaCenter.lon_lat),
-                zoom: bolognaCenter.zoom,
-            }),
+            view: viewInstance,
         });
 
         setMap(mapInstance);
@@ -254,21 +251,33 @@ function MapSearch(props: any) {
                     </TabsContent>
                     <TabsContent value="moran" className="w-full h-full ">
                         <MapMoran
+                            tileProvider={tileProvider}
+                            mapView={mapView}
+
                             bolognaCenter={bolognaCenter}
                         />
                     </TabsContent>
                     <TabsContent value="prediction" className="w-full h-full ">
                         <MapPrediction
+                            tileProvider={tileProvider}
+                            mapView={mapView}
+
                             bolognaCenter={bolognaCenter}
                         />
                     </TabsContent>
                     <TabsContent value="bestZone" className="w-full h-full ">
                         <MapBestZone
+                            tileProvider={tileProvider}
+                            mapView={mapView}
+
                             bolognaCenter={bolognaCenter}
                         />
                     </TabsContent>
                     <TabsContent value="clusters" className="w-full h-full ">
                         <MapClusters
+                            tileProvider={tileProvider}
+                            mapView={mapView}
+
                             bolognaCenter={bolognaCenter}
                         />
                     </TabsContent>

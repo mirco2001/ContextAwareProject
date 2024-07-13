@@ -554,7 +554,6 @@ function SearchResult() {
                 </Button>
 
                 <Popover>
-
                     <PopoverTrigger
                         className="absolute top-5 right-5 z-10">
                         <Card className='p-2'>

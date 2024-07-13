@@ -2,8 +2,8 @@
 import { Feature } from 'ol';
 import { fromLonLat } from "ol/proj"
 import { Polygon } from "ol/geom"
-import { useEffect, useState } from "react"
-import { OSM } from "ol/source"
+import { useEffect, useRef, useState } from "react"
+import { OSM, XYZ } from "ol/source"
 import { Fill, Stroke, Style } from "ol/style"
 import VectorSource from "ol/source/Vector"
 import VectorLayer from "ol/layer/Vector"
@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/hover-card"
 import { Separator } from "@/components/ui/separator"
 import {geofenceNormalStyle} from '@/common/geofenceStyles';
+import { attributions, key } from '@/common/keys';
 
 
 // LL prezzo basso vicino basso
@@ -70,7 +71,19 @@ const HHstyle = new Style({
 function MapMoran(props: any) {
     const info = document.getElementById('info');
 
+    // ==== variabili state globali ====
+
+    // - per la mappa
     const [mapMoran, setMapMoran] = useState<MapOl>();
+    const [tileLayer, setTilelayer] = useState<TileLayer<any>>();
+
+    const OSM_source = useRef(new OSM());
+    const aerial_source  = useRef(new XYZ({
+        attributions: attributions,
+        url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=' + key,
+        tileSize: 512,
+        maxZoom: 20,
+    }));
 
     const [moranData, setMoranData] = useState();
 
@@ -83,18 +96,17 @@ function MapMoran(props: any) {
     let lastFeature: FeatureLike | undefined;
 
     useEffect(() => {
-        const osmLayer = new TileLayer({
+        const tileLayerInstance = new TileLayer({
             preload: Infinity,
-            source: new OSM(),
+            source: getTileProvider(props.tileProvider),
         });
 
+        setTilelayer(tileLayerInstance)
+        
         const mapInstance = new MapOl({
             target: "mapMoran",
-            layers: [osmLayer],
-            view: new View({
-                center: fromLonLat(props.bolognaCenter.lon_lat),
-                zoom: props.bolognaCenter.zoom,
-            }),
+            layers: [tileLayerInstance],
+            view: props.mapView,
         });
 
         setMapMoran(mapInstance);
@@ -105,6 +117,27 @@ function MapMoran(props: any) {
             }
         };
     }, []);
+
+    useEffect(() => {
+        if (!props.tileProvider)
+            return;
+
+        tileLayer?.setSource(getTileProvider(props.tileProvider));
+
+    }, [props.tileProvider]);
+
+
+    function getTileProvider(provider: string) {
+
+        switch (provider) {
+            case "osm":
+                return OSM_source.current;
+            case "aerial":
+                return aerial_source.current;
+            default:
+                return OSM_source.current;
+        }
+    }
 
     useEffect(() => {
         if (!mapMoran)

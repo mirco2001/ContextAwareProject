@@ -1,5 +1,5 @@
 import TileLayer from "ol/layer/Tile";
-import { OSM } from "ol/source";
+import { OSM, XYZ } from "ol/source";
 import { Map as MapOl, View } from 'ol';
 import { fromLonLat } from 'ol/proj';
 import Feature from 'ol/Feature';
@@ -13,31 +13,40 @@ import WKB from "ol/format/WKB";
 
 
 // import componenti react
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 
 import { getColor } from "@/lib/utils";
+import { attributions, key } from "@/common/keys";
 
 
 function MapClusters(props: any) {
 
     const [map, setMap] = useState<MapOl | undefined>(undefined);
+    const [tileLayer, setTilelayer] = useState<TileLayer<any>>();
     const [cluster, setCluster] = useState(null);
+
+    const OSM_source = useRef(new OSM());
+    const aerial_source  = useRef(new XYZ({
+        attributions: attributions,
+        url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=' + key,
+        tileSize: 512,
+        maxZoom: 20,
+    }));
 
     // creazione della mappa
     useEffect(() => {
-        const osmLayer = new TileLayer({
+        const tileLayerInstance = new TileLayer({
             preload: Infinity,
-            source: new OSM(),
+            source: getTileProvider(props.tileProvider),
         });
+
+        setTilelayer(tileLayerInstance)
 
         const mapInstance = new MapOl({
             target: "map",
-            layers: [osmLayer],
-            view: new View({
-                center: fromLonLat(props.bolognaCenter.lon_lat),
-                zoom: props.bolognaCenter.zoom,
-            }),
+            layers: [tileLayerInstance],
+            view: props.mapView,
         });
 
         setMap(mapInstance);
@@ -48,6 +57,27 @@ function MapClusters(props: any) {
             }
         };
     }, []);
+
+    useEffect(() => {
+        if (!props.tileProvider)
+            return;
+
+        tileLayer?.setSource(getTileProvider(props.tileProvider));
+
+    }, [props.tileProvider]);
+
+
+    function getTileProvider(provider: string) {
+
+        switch (provider) {
+            case "osm":
+                return OSM_source.current;
+            case "aerial":
+                return aerial_source.current;
+            default:
+                return OSM_source.current;
+        }
+    }
 
     useEffect(() => {
         fetch('http://localhost:4000/datiCluster', {
