@@ -27,6 +27,8 @@ import { getColor } from "@/lib/utils";
 import { attributions, key } from '@/common/keys';
 import { predictionData, PredictionDataBack, ZoneData } from '@/common/interfaces';
 
+import { LoaderCircle } from "lucide-react"
+
 let yearMin: Map<string, number>, yearMax: Map<string, number>;
 
 function MapPrediction(props: any) {
@@ -59,6 +61,9 @@ function MapPrediction(props: any) {
     const info = document.getElementById('info');
     let lastFeature: FeatureLike | undefined;
     const [prices, setPrices] = useState<ReactElement<any, any>>();
+
+
+    const [isLoading, setIsLoading] = useState(true);
 
     // creazione della mappa
     useEffect(() => {
@@ -183,6 +188,8 @@ function MapPrediction(props: any) {
 
                 setPredictionDates([...yearMax.keys()])
                 setPredictionNumber(yearMax.size)
+
+                setIsLoading(false);
             })
             .catch(error => {
                 console.error('Errore nella fetch:', error);
@@ -199,10 +206,7 @@ function MapPrediction(props: any) {
             .then(response => response.json())
             .then(data => {
 
-                setZonesData(data.rows)
-
-                console.log(data.rows);
-
+                setZonesData(data.rows);
 
             })
             .catch(error => {
@@ -491,7 +495,7 @@ function MapPrediction(props: any) {
 
         let yearPrediction = zonePrediction.get(nameOfPrediction);
 
-        let value = getColor(yearPrediction?yearPrediction[predYear]?.price:0,  yearMax.get(date) ?? 0, yearMin.get(date) ?? 0);
+        let value = getColor(yearPrediction ? yearPrediction[predYear]?.price : 0, yearMax.get(date) ?? 0, yearMin.get(date) ?? 0);
 
         let color = "rgba(" + value.r + ", " + value.g + "," + value.b + ", 0.5)";
 
@@ -523,8 +527,26 @@ function MapPrediction(props: any) {
         return newStyle
     }
 
+    useEffect(() => {
+        if (isLoading)
+            return
+
+        let overlay = document.getElementById('overlay');
+
+        if(overlay)
+            overlay.style.display = "none";
+
+    }, [isLoading])
+
+
     return (
         <div className="h-full w-full relative">
+            <div
+                id='overlay'
+                className='absolute top-0 left-0 w-full h-full z-10 backdrop-blur-md bg-black/60 content-center flex flex-col items-center justify-center'>
+                    <LoaderCircle className='animate-spin h-10 w-10' />
+                    Processing
+            </div>
 
             <div style={{ height: '100%', width: '100%' }}
                 id="mapPrediction"
