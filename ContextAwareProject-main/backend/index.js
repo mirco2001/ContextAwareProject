@@ -436,7 +436,7 @@ app.post('/DIPoI', async (req, res) => {
       }
 
       if (item.name == "Ristoranti") {
-        var insert = await pool.query(`INSERT INTO ristoranti ("tipologia",  "Latitudine","Longitudine") VALUES  ('${item.name}', ${item.lat}, ${item.lon});`);
+        var insert = await pool.query(`INSERT INTO ristoranti ("Nome",  "Latitudine","Longitudine") VALUES  ('${item.name}', ${item.lat}, ${item.lon});`);
       }
 
       if (item.name == "Scuole") {
