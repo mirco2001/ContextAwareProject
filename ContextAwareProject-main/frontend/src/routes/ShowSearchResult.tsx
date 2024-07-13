@@ -57,7 +57,7 @@ function SearchResult() {
     // - per la mappa
     const [tileProvider, setTileProvider] = useState<string>("osm");
     const [tileLayer, setTilelayer] = useState<TileLayer<any>>();
-    const [mapView, setMapView] = useState();
+    const [mapView, setMapView] = useState<View | undefined>(undefined);;
     const [map, setMap] = useState<MapOl | undefined>(undefined);
 
     const OSM_source = useRef(new OSM());
@@ -184,7 +184,7 @@ function SearchResult() {
         const format = new WKB();
 
         // per ogni casa recuperata
-        bestHouseData.forEach(house => {
+        bestHouseData.forEach((house: { geom_casa: any; punteggio: string; id_casa: any; }) => {
 
             // - leggo con il parser la geometria della casa
             let houseGeometry = format.readGeometry(house.geom_casa, {
@@ -246,7 +246,7 @@ function SearchResult() {
             return;
 
         // per ogni feature (che rappresenta una casa)
-        houseSource.getFeatures().forEach(houseFeature => {
+        houseSource.getFeatures().forEach((houseFeature: { get: (arg0: string) => number; setStyle: (arg0: any[]) => void; set: (arg0: string, arg1: string) => void; }) => {
 
             // viene generato uno stile con colore che rapresenta il punteggio
             let color = getColor(houseFeature.get("score"), bestHouseScoreLimits[0], bestHouseScoreLimits[1]);
@@ -292,7 +292,7 @@ function SearchResult() {
             return;
 
         // per ogni gruppo di layer poi (un gruppo è costituito dai layer della stessa categoria)
-        poiLayers.forEach(layerGroup => {
+        poiLayers.forEach((layerGroup: LayerInfo[]) => {
             // per ogni layer
             layerGroup.forEach((layer: LayerInfo) => {
 
@@ -318,7 +318,7 @@ function SearchResult() {
                 ];
 
                 // tale stile viene applicato a tutti le feature di quel layer
-                layer.layer.getSource()?.getFeatures().forEach(element => {
+                layer.layer.getSource()?.getFeatures().forEach((element: { setStyle: (arg0: any[]) => void; }) => {
                     element.setStyle(style);
                 });
             });
@@ -338,7 +338,7 @@ function SearchResult() {
         info.style.top = '0px';
 
         // al click sulla mappa
-        map.on('click', function (e) {
+        map.on('click', function (e: { pixel: any; }) {
             // estraggo la feature "sotto il puntatore del mouse"
             let featuresAtPixel = map.getFeaturesAtPixel(e.pixel);
 
@@ -380,6 +380,7 @@ function SearchResult() {
         // estraggo le coordinate della feature selezionata
         // e trovo la sua posizione all'interno del div della mappa
         var geometry = lastFeature.getGeometry();
+        //@ts-ignore
         var coordinate = geometry?.getCoordinates();
         var pixel = map.getPixelFromCoordinate(coordinate);
 
