@@ -2,7 +2,7 @@
 import { Feature, View } from "ol";
 import TileLayer from "ol/layer/Tile";
 import { fromLonLat, transform } from "ol/proj";
-import { OSM } from "ol/source";
+import { OSM, StadiaMaps, XYZ } from "ol/source";
 import { Map as MapOl } from 'ol';
 import { Coordinate } from "ol/coordinate";
 import { moveMapTo } from "@/lib/utils";
@@ -15,7 +15,7 @@ import Text from 'ol/style/Text.js';
 import { Draw, Modify } from "ol/interaction";
 
 // import libreria react
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // import componenti shadecn
 import {
@@ -29,6 +29,7 @@ import {
 
 // import stili e icone
 import { Footprints, Accessibility, Car, Bike } from "lucide-react"
+import { attributions, key } from "@/common/keys";
 
 var waitTime = 2 * 1000; // 2 s in millis 
 var lastRequestTime: Date | null = null;
@@ -37,7 +38,16 @@ function MapDailyPath(props: any) {
     // ==== variabili state globali ====
 
     // - per la mappa
+    const [tileLayer, setTilelayer] = useState<TileLayer<any>>();
     const [mapDailyPath, setMapDailyPath] = useState<MapOl>();
+
+    const OSM_source = useRef(new OSM());
+    const aerial_source  = useRef(new XYZ({
+        attributions: attributions,
+        url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=' + key,
+        tileSize: 512,
+        maxZoom: 20,
+    }));
 
     // - punti tra cui calcolare il percorso
     const [houseCoordinates, setHouseCoordinates] = useState<Coordinate | undefined>(undefined);
@@ -54,7 +64,7 @@ function MapDailyPath(props: any) {
     const [distance, setDistance] = useState<number | undefined>(undefined);
     const [timeMinutes, setTimeMinutes] = useState<number | undefined>(undefined);
     const [timeSeconds, setTimeSeconds] = useState<number | undefined>(undefined);
-    
+
     // - stile della linea per il percorso trai "punti giornalieri"
     let dailyLinePathStyle = new Style({
         stroke: new Stroke({
@@ -99,18 +109,17 @@ function MapDailyPath(props: any) {
     // creazione della mappa
     // (attivata all'avvio del componente)
     useEffect(() => {
-        const osmLayer = new TileLayer({
+        const tileLayerInstance = new TileLayer({
             preload: Infinity,
-            source: new OSM(),
+            source: getTileProvider(props.tileProvider),
         });
+
+        setTilelayer(tileLayerInstance)
 
         const mapInstance = new MapOl({
             target: "mapDailyPath",
-            layers: [osmLayer],
-            view: new View({
-                center: fromLonLat(props.bolognaCenter.lon_lat),
-                zoom: props.bolognaCenter.zoom,
-            }),
+            layers: [tileLayerInstance],
+            view: props.mapView,
         });
 
         setMapDailyPath(mapInstance);
@@ -121,6 +130,27 @@ function MapDailyPath(props: any) {
             }
         };
     }, []);
+
+    useEffect(() => {
+        if (!props.tileProvider)
+            return;
+
+        tileLayer?.setSource(getTileProvider(props.tileProvider));
+
+    }, [props.tileProvider]);
+
+
+    function getTileProvider(provider: string) {
+
+        switch (provider) {
+            case "osm":
+                return OSM_source.current;
+            case "aerial":
+                return aerial_source.current;
+            default:
+                return OSM_source.current;
+        }
+    }
 
 
     // metodo per creare i vari layer della mappa
@@ -160,19 +190,19 @@ function MapDailyPath(props: any) {
         // creo il layer in cui inserire la feature del percorso
         let vectorSourcePath = new VectorSource();
         vectorSourcePath.addFeature(props.selectedHouse);
-        
+
         let vectorLayerPath = new VectorLayer({
             source: vectorSourcePath,
             style: dailyLinePathStyle
         })
 
-        
+
         // - LAYER punti giornalieri
         let vectorLayer = new VectorLayer({
             source: props.dailyPointsSource,
         })
 
-        
+
         // aggiungo i layer alla mappa
         mapDailyPath?.addLayer(vectorLayerPath);
         mapDailyPath?.addLayer(vectorLayerCasa);
@@ -224,7 +254,7 @@ function MapDailyPath(props: any) {
         props.dailyPointsSource.on('change', (e: Event) => setEvent(e));
 
         // -- riordinamento dei punti quando vengono cancellati punti
-        props.dailyPointsSource.on('removefeature', () => {            
+        props.dailyPointsSource.on('removefeature', () => {
             setFeaturesRenumbered(props.dailyPointsSource.getFeatures())
         });
 

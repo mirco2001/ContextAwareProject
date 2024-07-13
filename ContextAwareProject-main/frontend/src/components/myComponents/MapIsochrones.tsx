@@ -6,7 +6,7 @@ import { Geometry } from 'ol/geom';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer from 'ol/layer/Vector';
 import { fromLonLat, transform } from 'ol/proj';
-import { OSM } from 'ol/source';
+import { OSM, StadiaMaps, XYZ } from 'ol/source';
 import VectorSource from 'ol/source/Vector';
 import { Fill, Icon, RegularShape, Stroke, Style } from 'ol/style';
 
@@ -31,19 +31,29 @@ import {
 import { Footprints, Accessibility, Car, Bike } from "lucide-react"
 
 // import libreria react
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 // import lib interne di utils e interfacce
 import { moveMapTo } from '@/lib/utils';
-import {geofenceNormalStyle} from '@/common/geofenceStyles';
+import { geofenceNormalStyle } from '@/common/geofenceStyles';
 import { LayerInfo } from '@/common/interfaces';
+import { attributions, key } from '@/common/keys';
 
 
 function MapIsochrones(props: any) {
     // ==== variabili state globali ====
 
     // - per la mappa
+    const [tileLayer, setTilelayer] = useState<TileLayer<any>>();
     const [mapIsochrones, setMapIsochrones] = useState<MapOl>();
+
+    const OSM_source = useRef(new OSM());
+    const aerial_source  = useRef(new XYZ({
+        attributions: attributions,
+        url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=' + key,
+        tileSize: 512,
+        maxZoom: 20,
+    }));
 
     // - per la geofence dei punti raggiungibili e il suo layer
     const [reachablePlaces, setReachablePlaces] = useState<Feature<Geometry>>()
@@ -60,18 +70,17 @@ function MapIsochrones(props: any) {
     // funzione per la creazione della mappa di base
     // (attivata all'avvio del componente)
     useEffect(() => {
-        const osmLayer = new TileLayer({
+        const tileLayerInstance = new TileLayer({
             preload: Infinity,
-            source: new OSM(),
+            source: getTileProvider(props.tileProvider),
         });
+
+        setTilelayer(tileLayerInstance)
 
         const mapInstance = new MapOl({
             target: "mapIsochrones",
-            layers: [osmLayer],
-            view: new View({
-                center: fromLonLat(props.bolognaCenter.lon_lat),
-                zoom: props.bolognaCenter.zoom,
-            }),
+            layers: [tileLayerInstance],
+            view: props.mapView,
         });
 
         setMapIsochrones(mapInstance);
@@ -82,6 +91,27 @@ function MapIsochrones(props: any) {
             }
         };
     }, []);
+
+    useEffect(() => {
+        if (!props.tileProvider)
+            return;
+
+        tileLayer?.setSource(getTileProvider(props.tileProvider));
+
+    }, [props.tileProvider]);
+
+
+    function getTileProvider(provider: string) {
+
+        switch (provider) {
+            case "osm":
+                return OSM_source.current;
+            case "aerial":
+                return aerial_source.current;
+            default:
+                return OSM_source.current;
+        }
+    }
 
     // funzione che, se è stata selezionata una casa, setta i parametri standar per calcolare 
     // la gofence dei punti raggiungibili e sposta la visuale sulla casa stessa
@@ -128,7 +158,7 @@ function MapIsochrones(props: any) {
             return
 
         // per ogni gruppo di layer (divisi per categoria)
-        props.poiLayers.forEach((layerGroup:LayerInfo[]) => {
+        props.poiLayers.forEach((layerGroup: LayerInfo[]) => {
 
             layerGroup.forEach(layer => {
                 // - imposto lo z index a 1 in modo che sia sopra ai layer impostati a 0
@@ -204,7 +234,7 @@ function MapIsochrones(props: any) {
             return;
 
         // Rimuovi il layer esistente (se presente)
-        if(reachablePlacesLayer)
+        if (reachablePlacesLayer)
             mapIsochrones?.removeLayer(reachablePlacesLayer);
 
         // Creo una nuova VectorSource e aggiungo la feature "reachablePlaces"
@@ -279,7 +309,7 @@ function MapIsochrones(props: any) {
 
     }, [reachablePlaces])
 
-    
+
 
     return (
         <div className="h-full w-full relative">

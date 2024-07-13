@@ -3,17 +3,16 @@ import { Feature, Map as MapOl, View } from 'ol';
 import { fromLonLat } from "ol/proj"
 import { Geometry, Point } from "ol/geom"
 import TileLayer from "ol/layer/Tile"
-import { OSM } from "ol/source"
+import { OSM, XYZ } from "ol/source"
 import { getCenter } from 'ol/extent';
 import WKB from "ol/format/WKB";
 import VectorSource from "ol/source/Vector";
 import VectorLayer from "ol/layer/Vector";
 import { Fill, Icon, RegularShape, Stroke, Style } from "ol/style"
 import { FeatureLike } from "ol/Feature";
-import StadiaMaps from 'ol/source/StadiaMaps.js';
 
 // import libreria react
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 // import componenti shadecn
 import {
@@ -28,13 +27,12 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+
 
 // import componenti miei
 import PoiToggleList from "@/components/myComponents/PoiToggleList"
@@ -48,14 +46,27 @@ import { HouseData, LayerInfo } from "@/common/interfaces"
 
 // import stili e icone
 import { LocateFixed, X, Map } from "lucide-react"
+import { attributions, key } from '@/common/keys';
 
 let lastFeature: FeatureLike | undefined;
+let shouldShowInfo = true;
 
 function SearchResult() {
     // ==== variabili state globali ====
 
     // - per la mappa
+    const [tileProvider, setTileProvider] = useState<string>("osm");
+    const [tileLayer, setTilelayer] = useState<TileLayer<any>>();
+    const [mapView, setMapView] = useState();
     const [map, setMap] = useState<MapOl | undefined>(undefined);
+
+    const OSM_source = useRef(new OSM());
+    const aerial_source = useRef(new XYZ({
+        attributions: attributions,
+        url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=' + key,
+        tileSize: 512,
+        maxZoom: 20,
+    }));
 
     // - per i layer dei POI sulla mappa
     const [poiLayers, setPoiLayers] = useState<LayerInfo[][]>();
@@ -80,24 +91,28 @@ function SearchResult() {
         zoom: 14
     }
 
-    const [actualLayer,setActualLayer] = useState(new TileLayer({
-        preload: Infinity,
-        source: new OSM()
-    }));
-
     // creazione della mappa
     // (attivata all'avvio del componente)
     useEffect(() => {
-        const mapInstance = new MapOl({
-            target: "map",
-            layers: [actualLayer],
-            view: new View({
-                center: fromLonLat(bolognaCenter.lon_lat),
-                zoom: bolognaCenter.zoom,
-            }),
+        const tileLayerInstance = new TileLayer({
+            preload: Infinity,
+            source: OSM_source.current,
         });
 
+        setTilelayer(tileLayerInstance)
 
+        const viewInstance = new View({
+            center: fromLonLat(bolognaCenter.lon_lat),
+            zoom: bolognaCenter.zoom,
+        })
+
+        setMapView(viewInstance);
+
+        const mapInstance = new MapOl({
+            target: "map",
+            layers: [tileLayerInstance],
+            view: viewInstance,
+        });
 
         setMap(mapInstance);
 
@@ -107,6 +122,23 @@ function SearchResult() {
             }
         };
     }, []);
+
+    useEffect(() => {
+        if (!tileProvider)
+            return
+
+        switch (tileProvider) {
+            case "osm":
+                tileLayer?.setSource(OSM_source.current);
+                break;
+            case "aerial":
+                tileLayer?.setSource(aerial_source.current);
+                break;
+            default:
+                tileLayer?.setSource(OSM_source.current);
+        }
+    }, [tileProvider])
+
 
     // fetch delle case rispetto al sondaggio dell'utente
     useEffect(() => {
@@ -132,7 +164,7 @@ function SearchResult() {
         if (!map)
             return;
 
-        if (DailyPathPanel && PoiPanel){
+        if (DailyPathPanel && PoiPanel) {
             PoiPanel.style.display = "block";
             DailyPathPanel.style.display = "none";
         }
@@ -336,7 +368,7 @@ function SearchResult() {
     // funzione che mostra e posiziona il popup sulla mappa vicino alla feature selezionata
     function popUpFollowFeature() {
         // controllo che pop-up e mappa siano selezionati
-        if (!info || !map)
+        if (!info || !map || !shouldShowInfo)
             return;
 
         // controllo che sia stata selezionata una feature altrimenti nascondo il pop-up
@@ -369,7 +401,7 @@ function SearchResult() {
         // - posizione in pixel della feature
         info.style.visibility = 'visible';
         info.style.left = (pixel[0] - info.offsetWidth - 20) + 'px';
-        info.style.top = (pixel[1] + info.offsetHeight / 2) + 'px';
+        info.style.top = (pixel[1] - info.offsetHeight / 3) + 'px';
 
         // coloro il div in base al punteggio
         let divScore = document.getElementById("divScore");
@@ -377,23 +409,9 @@ function SearchResult() {
             divScore.style.backgroundColor = lastFeature.get("color");
     }
 
-    function handleSelectChange(value){
-        if(value == "stamen"){
-            actualLayer.setSource(
-                new StadiaMaps({
-                    layer: 'stamen_terrain',
-                })
-            );
-
-        } else if(value == "osm"){
-            actualLayer.setSource(new OSM());
-        }
-        
-    }
-
     return (
         <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel>
+            <ResizablePanel className='relative'>
 
                 <Tabs defaultValue="selezione" className="w-full h-full relative">
                     <TabsList className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-10">
@@ -406,8 +424,10 @@ function SearchResult() {
                             showAllPoiFeatures()
                             moveMapTo(bolognaCenter.lon_lat, bolognaCenter.zoom, map);
 
-                            if (info && selectedHouse)
+                            if (info && selectedHouse){
+                                shouldShowInfo = true;
                                 info.style.visibility = 'visible';
+                            }
 
                             if (!DailyPathPanel || !PoiPanel)
                                 return;
@@ -423,12 +443,14 @@ function SearchResult() {
 
                             value="isocrone"
                             onClick={() => {
-                                if (info)
+                                if (info){
+                                    shouldShowInfo = false;
                                     info.style.visibility = 'hidden';
+                                }
 
                                 if (!DailyPathPanel || !PoiPanel)
                                     return;
-    
+
                                 PoiPanel.style.display = "block";
                                 DailyPathPanel.style.display = "none";
                             }}>
@@ -441,12 +463,14 @@ function SearchResult() {
 
                             value="Percorso Giornaliero"
                             onClick={() => {
-                                if (info)
+                                if (info){
+                                    shouldShowInfo = false;
                                     info.style.visibility = 'hidden';
+                                }
 
                                 if (!DailyPathPanel || !PoiPanel)
                                     return;
-    
+
                                 PoiPanel.style.display = "none";
                                 DailyPathPanel.style.display = "block";
                             }}>
@@ -459,23 +483,15 @@ function SearchResult() {
                         <div style={{ height: '100%', width: '100%' }}
                             id="map"
                             className="map-container relative">
-                            <Select onValueChange={(value: String) => handleSelectChange(value)} >
-                                <SelectTrigger className="absolute top-0 right-0 z-10 w-[10vh]">
-                                    <Map></Map>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="osm">OpenStreetMap</SelectItem>
-                                        <SelectItem value="stamen">Stamen</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
 
                         </div>
                     </TabsContent>
 
                     <TabsContent value="isocrone" className="w-full h-full ">
                         <MapIsochrones
+                            tileProvider={tileProvider}
+                            mapView={mapView}
+
                             bolognaCenter={bolognaCenter}
                             selectedHouse={selectedHouse}
                             poiLayers={poiLayers}
@@ -487,6 +503,9 @@ function SearchResult() {
                         className="w-full h-full ">
 
                         <MapDailyPath
+                            tileProvider={tileProvider}
+                            mapView={mapView}
+
                             bolognaCenter={bolognaCenter}
                             selectedHouse={selectedHouse}
 
@@ -534,23 +553,43 @@ function SearchResult() {
                     <LocateFixed className="h-4 w-4" />
                 </Button>
 
+                <Popover>
+
+                    <PopoverTrigger
+                        className="absolute top-5 right-5 z-10">
+                        <Card className='p-2'>
+                            <Map />
+                        </Card>
+                    </PopoverTrigger>
+                    <PopoverContent align='end' className='w-min'>
+                        <ToggleGroup
+                            type="single"
+                            value={tileProvider}
+                            className='flex flex-col'
+                            onValueChange={(value: string) => setTileProvider(value)}
+                        >
+                            <ToggleGroupItem className='w-full' value="osm">OSM</ToggleGroupItem>
+                            <ToggleGroupItem className='w-full' value="aerial">Aerial</ToggleGroupItem>
+                        </ToggleGroup>
+                    </PopoverContent>
+                </Popover>
+
+
             </ResizablePanel>
 
             <ResizableHandle />
 
             <ResizablePanel minSize={10} maxSize={20} className="flex flex-col justify-around px-6">
-                <div 
+                <div
                     id='PoiPanel'
-                    className='h-full flex'>
+                    className='h-full'>
                     <PoiToggleList
                         map={map}
                         setPoiLayers={setPoiLayers}
                     />
                 </div>
 
-                <div 
-                    id='DailyPathPanel'
-                    className='h-full flex'>
+                <div id='DailyPathPanel'>
                     <ControlsDailyPath
                         dailyPointsSource={dailyPointsSource}
                         setDailyPointsSource={setDailyPointsSource}

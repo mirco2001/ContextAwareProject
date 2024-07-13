@@ -1,6 +1,6 @@
 // import libreria openlayer
-import { OSM } from "ol/source";
-import { useEffect, useState } from "react";
+import { OSM, XYZ } from "ol/source";
+import { useEffect, useRef, useState } from "react";
 import { Feature, Map as MapOl, View } from 'ol';
 import { fromLonLat } from 'ol/proj';
 import GeoJSON from 'ol/format/GeoJSON.js';
@@ -18,13 +18,11 @@ import {
 } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 
 import { LocateFixed, Heart, Map } from "lucide-react";
 
@@ -34,7 +32,6 @@ import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import { Link } from "react-router-dom";
 import { Geometry, Polygon } from "ol/geom";
 
-import UserProfile from '../UserProfile.ts'
 import VectorSource from "ol/source/Vector";
 
 import "./HomePage.css"
@@ -48,12 +45,24 @@ import { geofenceNormalStyle } from "@/common/geofenceStyles.tsx";
 import { moveMapTo } from "@/lib/utils.ts";
 import MapBestZone from "@/components/myComponents/MapBestZone.tsx";
 import MapClusters from "@/components/myComponents/MapClusters.tsx";
+import { attributions, key } from "@/common/keys.ts";
 
 function MapSearch(props: any) {
 
     // ======== VARIABILI GLOBALI ========
-    // - mappa in ol  
+    // - per la mappa  
+    const [tileProvider, setTileProvider] = useState<string>("osm");
+    const [tileLayer, setTilelayer] = useState<TileLayer<any>>();
+    const [mapView, setMapView] = useState();
     const [map, setMap] = useState<MapOl>();
+
+    const OSM_source = useRef(new OSM());
+    const aerial_source = useRef(new XYZ({
+        attributions: attributions,
+        url: 'https://api.maptiler.com/maps/satellite/{z}/{x}/{y}.jpg?key=' + key,
+        tileSize: 512,
+        maxZoom: 20,
+    }));
 
     const [layer, setLayer] = useState<VectorLayer<Feature<Geometry>>>();
 
@@ -65,17 +74,25 @@ function MapSearch(props: any) {
         zoom: 14
     }
 
-    const [actualLayer,setActualLayer] = useState(new TileLayer({
-        preload: Infinity,
-        source: new OSM()
-    }));
-
     // creazione della mappa
     useEffect(() => {
+        const tileLayerInstance = new TileLayer({
+            preload: Infinity,
+            source: OSM_source.current,
+        });
+
+        setTilelayer(tileLayerInstance)
+
+        const viewInstance = new View({
+            center: fromLonLat(bolognaCenter.lon_lat),
+            zoom: bolognaCenter.zoom,
+        })
+
+        setMapView(viewInstance);
 
         const mapInstance = new MapOl({
             target: "map",
-            layers: [actualLayer],
+            layers: [tileLayerInstance],
             view: new View({
                 center: fromLonLat(bolognaCenter.lon_lat),
                 zoom: bolognaCenter.zoom,
@@ -97,6 +114,22 @@ function MapSearch(props: any) {
                 mapInstance.setTarget(undefined);
         }
     }, []);
+
+    useEffect(() => {
+        if (!tileProvider)
+            return
+
+        switch (tileProvider) {
+            case "osm":
+                tileLayer?.setSource(OSM_source.current);
+                break;
+            case "aerial":
+                tileLayer?.setSource(aerial_source.current);
+                break;
+            default:
+                tileLayer?.setSource(OSM_source.current);
+        }
+    }, [tileProvider])
 
     function circleToPolygon(circle, sides: number) {
         const geometry = circle.getGeometry();
@@ -186,26 +219,9 @@ function MapSearch(props: any) {
         }
     }, [map, layer]);
 
-
-    function handleSelectChange(value){
-        if(value == "stamen"){
-            actualLayer.setSource(
-                new StadiaMaps({
-                    layer: 'stamen_terrain',
-                })
-            );
-
-        } else if(value == "osm"){
-            actualLayer.setSource(new OSM());
-        }
-        
-    }
-
     return (
         <ResizablePanelGroup direction="horizontal">
-            <ResizablePanel>
-
-                {/* h-fit flex flex-col absolute left-1 top-1/2 transform -translate-y-1/2 z-10 */}
+            <ResizablePanel className='relative'>
 
                 <Tabs defaultValue="selezione" className="w-full h-full relative">
                     <TabsList className="absolute top-5 left-1/2 transform -translate-x-1/2 z-10">
@@ -233,17 +249,7 @@ function MapSearch(props: any) {
 
                     <TabsContent value="selezione" className="w-full h-full ">
                         <div style={{ height: '100%', width: '100%' }} id="map" className="map-container">
-                            <Select onValueChange={(value: String) => handleSelectChange(value)} >
-                                <SelectTrigger className="absolute top-0 right-0 z-10 w-[10vh]">
-                                    <Map></Map>
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectGroup>
-                                        <SelectItem value="osm">OpenStreetMap</SelectItem>
-                                        <SelectItem value="stamen">Stamen</SelectItem>
-                                    </SelectGroup>
-                                </SelectContent>
-                            </Select>
+                            
                          </div>
                     </TabsContent>
                     <TabsContent value="moran" className="w-full h-full ">
@@ -276,6 +282,27 @@ function MapSearch(props: any) {
                     onClick={() => moveMapTo(bolognaCenter.lon_lat, bolognaCenter.zoom, map)}>
                     <LocateFixed className="h-4 w-4" />
                 </Button>
+
+                <Popover>
+
+                    <PopoverTrigger
+                        className="absolute top-5 right-5 z-10">
+                        <Card className='p-2'>
+                            <Map />
+                        </Card>
+                    </PopoverTrigger>
+                    <PopoverContent align='end' className='w-min'>
+                        <ToggleGroup
+                            type="single"
+                            value={tileProvider}
+                            className='flex flex-col'
+                            onValueChange={(value: string) => setTileProvider(value)}
+                        >
+                            <ToggleGroupItem className='w-full' value="osm">OSM</ToggleGroupItem>
+                            <ToggleGroupItem className='w-full' value="aerial">Aerial</ToggleGroupItem>
+                        </ToggleGroup>
+                    </PopoverContent>
+                </Popover>
             </ResizablePanel>
 
             <ResizableHandle />
