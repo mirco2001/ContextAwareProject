@@ -96,7 +96,7 @@ function MapBestZone(props: any) {
 
     useEffect(() => {
         // recupero i dati delle zone
-        fetch('http://localhost:4000/getAree', {
+        fetch('http://backend:4000/getAree', {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",

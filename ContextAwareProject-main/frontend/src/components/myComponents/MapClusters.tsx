@@ -85,7 +85,7 @@ function MapClusters(props: any) {
     }
 
     useEffect(() => {
-        fetch('http://localhost:4000/datiCluster', {
+        fetch('http://backend:4000/datiCluster', {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",

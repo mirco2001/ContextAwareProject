@@ -194,7 +194,7 @@ function MapMoran(props: any) {
     };
 
     useEffect(() => {
-        fetch('http://localhost:4000/moranData', {
+        fetch('http://backend:4000/moranData', {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
@@ -209,7 +209,7 @@ function MapMoran(props: any) {
             .catch(error => {
                 console.error('Errore nella fetch:', error);
             });
-        fetch('http://localhost:4000/moranIndex', {
+        fetch('http://backend:4000/moranIndex', {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",

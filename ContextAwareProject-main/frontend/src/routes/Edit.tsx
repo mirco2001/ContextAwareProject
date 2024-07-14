@@ -336,7 +336,7 @@ function Edit() {
 
     function apply(addList: AddPoI[], deletedList: PoiData2[]) {
 
-        fetch('http://localhost:4000/DIPoI', {
+        fetch('http://backend:4000/DIPoI', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

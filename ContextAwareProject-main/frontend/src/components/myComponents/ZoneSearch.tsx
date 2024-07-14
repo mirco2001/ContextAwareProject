@@ -40,7 +40,7 @@ function ZoneSearch(props: any) {
     // funzione per fare la richiesta sul db
     useEffect(() => {
         // "pesco" i dati sulle zone dal database e li salvo su zonesData 
-        fetch("http://localhost:4000/getZone")
+        fetch("http://backend:4000/getZone")
             .then(response => response.json())
             .then(data => {
                 // se i dati sono stati presi con successo aggiorno lo "stato dei dati sulle zone"

@@ -200,7 +200,7 @@ function MapSearch(props: any) {
             featureProjection: 'EPSG:3857'
         });
 
-        fetch('http://localhost:4000/datiSearch', {
+        fetch('http://backend:4000/datiSearch', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

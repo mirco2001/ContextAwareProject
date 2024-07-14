@@ -142,7 +142,7 @@ function SearchResult() {
 
     // fetch delle case rispetto al sondaggio dell'utente
     useEffect(() => {
-        fetch('http://localhost:4000/datiForm', {
+        fetch('http://backend:4000/datiForm', {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",

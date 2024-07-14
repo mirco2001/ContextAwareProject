@@ -70,7 +70,7 @@ function PoiToggleList(props: any) {
 
 
     useEffect(() => {
-        fetch('http://localhost:4000/Poi', {
+        fetch('http://backend:4000/Poi', {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",

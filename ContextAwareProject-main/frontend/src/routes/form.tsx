@@ -131,7 +131,7 @@ function RadioGroupForm() {
     const [userPreference, setUserPreference] = useState<z.infer<typeof formSchema>|undefined>(undefined);
 
     useEffect(() => {
-        fetch('http://localhost:4000/getPoI', {
+        fetch('http://backend:4000/getPoI', {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
@@ -187,7 +187,7 @@ function RadioGroupForm() {
     }, [userPreference]);
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        fetch('http://localhost:4000/datiForm', {
+        fetch('http://backend:4000/datiForm', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

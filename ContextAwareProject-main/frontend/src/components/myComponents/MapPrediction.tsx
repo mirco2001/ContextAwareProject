@@ -116,7 +116,7 @@ function MapPrediction(props: any) {
             return;
 
         // recupero i dati delle predizioni
-        fetch('http://localhost:4000/predizione', {
+        fetch('http://backend:4000/predizione', {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
@@ -197,7 +197,7 @@ function MapPrediction(props: any) {
 
 
         // recupero i dati delle zone
-        fetch('http://localhost:4000/getZone', {
+        fetch('http://backend:4000/getZone', {
             method: 'GET',
             headers: {
                 "Content-Type": "application/json",
